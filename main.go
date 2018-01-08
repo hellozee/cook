@@ -21,6 +21,8 @@ func main() {
 	checkErr(err)
 	doNothing(dir)
 
+	_ = os.Mkdir("Cooking", 750)
+
 	file, err := os.Stat("Recipe")
 	checkErr(err)
 
