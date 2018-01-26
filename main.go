@@ -1,12 +1,33 @@
 package main
 
-import "os"
-import "io/ioutil"
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
+)
 
 func init() {
 	fileDetails = make(map[string]params)
 	newfileTimings = make(map[string]string)
 	oldfileTimings = make(map[string]string)
+}
+
+func generateList(tag string) {
+
+	parameters := fileDetails[tag]
+
+	file, err := os.Stat(parameters.file)
+	checkErr(err)
+	t := file.ModTime()
+	hash, err := hashTime(t.String())
+	checkErr(err)
+	newfileTimings[parameters.file] = hash
+	hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity, entity{File: parameters.file, Hash: hash})
+	for _, name := range parameters.deps {
+		generateList(name)
+	}
+
 }
 
 func main() {
@@ -17,16 +38,27 @@ func main() {
 
 	parse(Recipe)
 
-	dir, err := os.Getwd()
-	checkErr(err)
-	doNothing(dir)
+	if _, err := os.Stat("Cooking/example.json"); err == nil {
+		fmt.Println("It exists")
+		xmlFile, err := os.Open("Cooking/example.json")
+		checkErr(err)
+		defer xmlFile.Close()
 
-	_ = os.Mkdir("Cooking", 750)
+		bytes, _ := ioutil.ReadAll(xmlFile)
+		var parsed parent
+		err = json.Unmarshal(bytes, &parsed)
+		fmt.Println(parsed)
 
-	file, err := os.Stat("Recipe")
-	checkErr(err)
+		generateList(compilerDetails.start)
 
-	t := file.ModTime()
+		//compare();
 
-	doNothing(t.String())
+	} else {
+		_ = os.Mkdir("Cooking", 0777)
+		generateList(compilerDetails.start)
+
+		//compileFirst();
+
+	}
+
 }

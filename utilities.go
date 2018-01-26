@@ -20,10 +20,23 @@ type params struct {
 	deps []string
 }
 
+type entity struct {
+	File string `json:"file"`
+	Hash string `json:"hash"`
+}
+
+type parent struct {
+	Body struct {
+		Entity []entity `json:"entity"`
+	} `json:"body"`
+}
+
 var compilerDetails compiler
 var fileDetails map[string]params
 var newfileTimings map[string]string
 var oldfileTimings map[string]string
+var hashJSONold parent
+var hashJSONnew parent
 
 func doNothing(str string) {
 	//Go is badass
@@ -88,4 +101,5 @@ func fillFileDetails(name string, identifier string, param string) {
 	}
 
 	fileDetails[name] = temp
+
 }
