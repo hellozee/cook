@@ -53,7 +53,7 @@ func hashTime(timeStamp string) (string, error) {
 	return string(bytes), err
 }
 
-func checkTimeStamp(timeStamp, hash string) bool {
+func checkTimeStamp(timeStamp string, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(timeStamp))
 	return err == nil
 }
