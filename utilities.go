@@ -95,6 +95,10 @@ func fillFileDetails(name string, identifier string, param string) {
 		temp = fileDetails[name]
 	}
 
+	if param == "" {
+		return
+	}
+
 	if identifier == "deps" {
 		paramArray := strings.Split(param, " ")
 		temp.deps = paramArray
