@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"os/exec"
 )
 
 func structToMap(parsedStruct []entity) {
@@ -17,7 +18,6 @@ func generateList(tag string) {
 	parameters := fileDetails[tag]
 
 	file, err := os.Stat(parameters.file)
-	//fmt.Println(tag)
 	checkErr(err)
 	t := file.ModTime()
 	hash, err := hashTime(t.String())
@@ -37,7 +37,9 @@ func compileFirst(tag string) {
 
 	parameters := fileDetails[tag]
 
-	//exec.Command(compilerDetails.binary, "-c", parameters.file, "-o", "Cooking/"+tag+".o")
+	cmd := exec.Command(compilerDetails.binary, "-c", parameters.file, "-o", "Cooking/"+tag+".o")
+	err := cmd.Run()
+	checkErr(err)
 
 	for _, name := range parameters.deps {
 		compileFirst(name)
@@ -56,7 +58,10 @@ func compareAndCompile(tag string) {
 	t := file.ModTime()
 
 	if !checkTimeStamp(t.String(), oldfileTimings[parameters.file]) {
-		//exec.Command(compilerDetails.binary, "-c", parameters.file, "-o", "Cooking/"+tag+".o")
+		cmd := exec.Command(compilerDetails.binary, "-c", parameters.file, "-o", "Cooking/"+tag+".o")
+		err := cmd.Run()
+		checkErr(err)
+
 		oldfileTimings[parameters.file], err = hashTime(t.String())
 		checkErr(err)
 	}
@@ -69,11 +74,10 @@ func compareAndCompile(tag string) {
 }
 
 func linkAll() {
-	//compile all the generated .o files under the Cooking directory
+	//Compile all the generated .o files under the Cooking directory
 
-	toBeExecuted := "-o " + compilerDetails.name + " " + compilerDetails.includes +
-		" " + compilerDetails.otherFlags + " " + "*.o" + " " + compilerDetails.ldFlags
-
-	//exec.Command(compilerDetails.binary, toBeExecuted)
-	doNothing(toBeExecuted)
+	cmd := exec.Command(compilerDetails.binary, "-o", compilerDetails.name, compilerDetails.includes,
+		compilerDetails.otherFlags, "Cooking/*.o", compilerDetails.ldFlags)
+	err := cmd.Run()
+	checkErr(err)
 }

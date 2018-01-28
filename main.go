@@ -51,4 +51,6 @@ func main() {
 	_, err = file.Write(jsonData)
 	checkErr(err)
 
+	linkAll()
+
 }
