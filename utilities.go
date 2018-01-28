@@ -1,6 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
+	"os/exec"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
@@ -45,6 +48,19 @@ func doNothing(str string) {
 func checkErr(err error) {
 	if err != nil {
 		panic(err)
+	}
+}
+
+func checkCommand(cmd *exec.Cmd) {
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	fmt.Println(cmd.Args)
+	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		return
 	}
 }
 

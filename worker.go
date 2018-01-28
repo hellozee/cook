@@ -38,8 +38,7 @@ func compileFirst(tag string) {
 	parameters := fileDetails[tag]
 
 	cmd := exec.Command(compilerDetails.binary, "-c", parameters.file, "-o", "Cooking/"+tag+".o")
-	err := cmd.Run()
-	checkErr(err)
+	checkCommand(cmd)
 
 	for _, name := range parameters.deps {
 		compileFirst(name)
@@ -59,8 +58,7 @@ func compareAndCompile(tag string) {
 
 	if !checkTimeStamp(t.String(), oldfileTimings[parameters.file]) {
 		cmd := exec.Command(compilerDetails.binary, "-c", parameters.file, "-o", "Cooking/"+tag+".o")
-		err := cmd.Run()
-		checkErr(err)
+		checkCommand(cmd)
 
 		oldfileTimings[parameters.file], err = hashTime(t.String())
 		checkErr(err)
@@ -75,9 +73,8 @@ func compareAndCompile(tag string) {
 
 func linkAll() {
 	//Compile all the generated .o files under the Cooking directory
-
 	cmd := exec.Command(compilerDetails.binary, "-o", compilerDetails.name, compilerDetails.includes,
 		compilerDetails.otherFlags, "Cooking/*.o", compilerDetails.ldFlags)
-	err := cmd.Run()
-	checkErr(err)
+	//cmd := exec.Command("echo", "oh yeah")
+	checkCommand(cmd)
 }
