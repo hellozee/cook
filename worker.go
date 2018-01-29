@@ -75,6 +75,5 @@ func linkAll() {
 	//Compile all the generated .o files under the Cooking directory
 	cmd := exec.Command(compilerDetails.binary, "-o", compilerDetails.name, compilerDetails.includes,
 		compilerDetails.otherFlags, "Cooking/*.o", compilerDetails.ldFlags)
-	//cmd := exec.Command("echo", "oh yeah")
 	checkCommand(cmd)
 }
