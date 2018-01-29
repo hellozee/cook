@@ -75,34 +75,27 @@ func checkTimeStamp(timeStamp string, hash string) bool {
 }
 
 func fillCompilerDetails(identifier string, param string) {
-
 	if identifier == "binary" {
 		compilerDetails.binary = param
 	}
-
 	if identifier == "name" {
 		compilerDetails.name = param
 	}
-
 	if identifier == "start" {
 		compilerDetails.start = param
 	}
-
 	if identifier == "ldflags" {
 		compilerDetails.ldFlags = param
 	}
-
 	if identifier == "includes" {
 		compilerDetails.includes = param
 	}
-
 	if identifier == "others" {
 		compilerDetails.otherFlags = param
 	}
 }
 
 func fillFileDetails(name string, identifier string, param string) {
-
 	var temp params
 
 	if identifier == "file" {
@@ -121,5 +114,4 @@ func fillFileDetails(name string, identifier string, param string) {
 	}
 
 	fileDetails[name] = temp
-
 }

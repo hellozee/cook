@@ -14,19 +14,23 @@ func structToMap(parsedStruct []entity) {
 }
 
 func generateList(tag string) {
-
+	//Generate Cooking/details.json
 	parameters := fileDetails[tag]
 
 	file, err := os.Stat(parameters.file)
 	checkErr(err)
+
 	t := file.ModTime()
 	hash, err := hashTime(t.String())
 	checkErr(err)
+
 	newfileTimings[parameters.file] = hash
 	hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity, entity{File: parameters.file, Hash: hash})
+
 	if parameters.deps == nil {
 		return
 	}
+
 	for _, name := range parameters.deps {
 		generateList(name)
 	}
