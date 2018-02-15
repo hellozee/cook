@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"os/exec"
+	"strings"
 )
 
 func structToMap(parsedStruct []entity) {
@@ -79,11 +80,11 @@ func compareAndCompile(tag string) {
 func linkAll() {
 
 	//Compile all the generated .o files under the Cooking directory
-	args := []string{"-o", compilerDetails.name}
+	args := []string{compilerDetails.binary, "-o", compilerDetails.name, compilerDetails.includes, compilerDetails.otherFlags}
 	for _, tag := range tagList {
 		args = append(args, tag)
 	}
 	args = append(args, compilerDetails.ldFlags)
-	cmd := exec.Command(compilerDetails.binary, args...)
+	cmd := exec.Command(os.Getenv("SHELL"), "-c", strings.Join(args, " "))
 	checkCommand(cmd)
 }
