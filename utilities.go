@@ -40,6 +40,7 @@ var newfileTimings map[string]string
 var oldfileTimings map[string]string
 var hashJSONold parent
 var hashJSONnew parent
+var tagList []string
 
 func doNothing(str string) {
 	//Go is badass
@@ -60,7 +61,6 @@ func checkCommand(cmd *exec.Cmd) {
 	fmt.Println(strings.Join(cmd.Args, " "))
 	if err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		return
 	}
 }
 

@@ -42,7 +42,8 @@ func compileFirst(tag string) {
 	parameters := fileDetails[tag]
 
 	cmd := exec.Command(compilerDetails.binary, "-c", parameters.file, "-o", "Cooking/"+tag+".o")
-	checkCommand(cmd)
+	go checkCommand(cmd)
+	tagList = append(tagList, "Cooking/"+tag+".o")
 
 	for _, name := range parameters.deps {
 		compileFirst(name)
@@ -69,15 +70,20 @@ func compareAndCompile(tag string) {
 	}
 
 	hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity, entity{File: parameters.file, Hash: oldfileTimings[parameters.file]})
-
+	tagList = append(tagList, "Cooking/"+tag+".o")
 	for _, name := range parameters.deps {
 		compareAndCompile(name)
 	}
 }
 
 func linkAll() {
+
 	//Compile all the generated .o files under the Cooking directory
-	cmd := exec.Command(compilerDetails.binary, "-o", compilerDetails.name, compilerDetails.includes,
-		compilerDetails.otherFlags, "Cooking/*.o", compilerDetails.ldFlags)
+	args := []string{"-o", compilerDetails.name}
+	for _, tag := range tagList {
+		args = append(args, tag)
+	}
+	args = append(args, compilerDetails.ldFlags)
+	cmd := exec.Command(compilerDetails.binary, args...)
 	checkCommand(cmd)
 }
