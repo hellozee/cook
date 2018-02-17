@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 )
@@ -56,6 +57,8 @@ func main() {
 		generateList(compilerDetails.start)
 		compileFirst(compilerDetails.start)
 	}
+
+	fmt.Println("All files Compiled...")
 
 	jsonData, err = json.MarshalIndent(hashJSONnew, "", " ")
 	checkErr(err)

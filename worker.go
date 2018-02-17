@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -41,9 +42,9 @@ func compileFirst(tag string) {
 	//Recursively generate .o files
 
 	parameters := fileDetails[tag]
-
+	fmt.Println("Compiling " + parameters.file)
 	cmd := exec.Command(compilerDetails.binary, "-c", parameters.file, "-o", "Cooking/"+tag+".o")
-	go checkCommand(cmd)
+	checkCommand(cmd)
 	tagList = append(tagList, "Cooking/"+tag+".o")
 
 	for _, name := range parameters.deps {
@@ -63,6 +64,7 @@ func compareAndCompile(tag string) {
 	t := file.ModTime()
 
 	if !checkTimeStamp(t.String(), oldfileTimings[parameters.file]) {
+		fmt.Println("Compiling " + parameters.file)
 		cmd := exec.Command(compilerDetails.binary, "-c", parameters.file, "-o", "Cooking/"+tag+".o")
 		checkCommand(cmd)
 
@@ -80,6 +82,7 @@ func compareAndCompile(tag string) {
 func linkAll() {
 
 	//Compile all the generated .o files under the Cooking directory
+	fmt.Println("Linking files..")
 	args := []string{compilerDetails.binary, "-o", compilerDetails.name, compilerDetails.includes, compilerDetails.otherFlags}
 	for _, tag := range tagList {
 		args = append(args, tag)
