@@ -15,67 +15,53 @@ func structToMap(parsedStruct []entity) {
 
 }
 
-func generateList(tag string) {
-	//Generate Cooking/details.json
-	parameters := fileDetails[tag]
+func generateList() {
 
-	file, err := os.Stat(parameters.file)
-	checkErr(err)
+	for _, value := range fileList {
+		file, err := os.Stat(value)
+		checkErr(err)
+		t := file.ModTime()
+		hash, err := hashTime(t.String())
+		checkErr(err)
 
-	t := file.ModTime()
-	hash, err := hashTime(t.String())
-	checkErr(err)
-
-	newfileTimings[parameters.file] = hash
-	hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity, entity{File: parameters.file, Hash: hash})
-
-	if parameters.deps == nil {
-		return
-	}
-
-	for _, name := range parameters.deps {
-		generateList(name)
+		newfileTimings[value] = hash
+		hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity, entity{File: value, Hash: hash})
 	}
 }
 
-func compileFirst(tag string) {
-	//Recursively generate .o files
+func compileFirst() {
+	//Iteratively generate .o files
 
-	parameters := fileDetails[tag]
-	fmt.Println("Compiling " + parameters.file)
-	cmd := exec.Command(compilerDetails.binary, "-c", parameters.file, "-o", "Cooking/"+tag+".o")
-	checkCommand(cmd)
-	tagList = append(tagList, "Cooking/"+tag+".o")
-
-	for _, name := range parameters.deps {
-		compileFirst(name)
+	for tag, file := range fileList {
+		fmt.Println("Compiling " + file)
+		cmd := exec.Command(compilerDetails.binary, "-c", file, "-o", "Cooking/"+tag+".o")
+		checkCommand(cmd)
+		tagList = append(tagList, "Cooking/"+tag+".o")
 	}
 }
 
-func compareAndCompile(tag string) {
+func compareAndCompile() {
 	//Compare the file hash with current hash if do not match generate .o file
 	//also replace the current hash with the new hash
 
-	parameters := fileDetails[tag]
+	for key, value := range fileList {
 
-	file, err := os.Stat(parameters.file)
+		file, err := os.Stat(value)
 
-	checkErr(err)
-	t := file.ModTime()
-
-	if !checkTimeStamp(t.String(), oldfileTimings[parameters.file]) {
-		fmt.Println("Compiling " + parameters.file)
-		cmd := exec.Command(compilerDetails.binary, "-c", parameters.file, "-o", "Cooking/"+tag+".o")
-		checkCommand(cmd)
-
-		oldfileTimings[parameters.file], err = hashTime(t.String())
 		checkErr(err)
-	}
+		t := file.ModTime()
 
-	hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity, entity{File: parameters.file, Hash: oldfileTimings[parameters.file]})
-	tagList = append(tagList, "Cooking/"+tag+".o")
-	for _, name := range parameters.deps {
-		compareAndCompile(name)
+		if !checkTimeStamp(t.String(), oldfileTimings[value]) {
+			fmt.Println("Compiling " + value)
+			cmd := exec.Command(compilerDetails.binary, "-c", value, "-o", "Cooking/"+key+".o")
+			checkCommand(cmd)
+
+			oldfileTimings[value], err = hashTime(t.String())
+			checkErr(err)
+		}
+
+		hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity, entity{File: value, Hash: oldfileTimings[value]})
+		tagList = append(tagList, "Cooking/"+key+".o")
 	}
 }
 

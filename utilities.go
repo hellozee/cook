@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -34,6 +35,7 @@ type parent struct {
 	} `json:"body"`
 }
 
+//Never Liked Global variables but until I think of a workaround
 var compilerDetails compiler
 var fileDetails map[string]params
 var newfileTimings map[string]string
@@ -41,17 +43,39 @@ var oldfileTimings map[string]string
 var hashJSONold parent
 var hashJSONnew parent
 var tagList []string
+var fileList map[string]string
 
+//Stop Go from throwing warnings if a variable is not used
 func doNothing(str string) {
 	//Go is badass
 }
 
+//Simple Error Checker
 func checkErr(err error) {
 	if err != nil {
 		panic(err)
 	}
 }
 
+//Generate the list of files to be compiled
+func generateFileList(tag string) {
+	details := fileDetails[tag]
+
+	_, err := os.Stat(details.file)
+	checkErr(err)
+
+	fileList[tag] = details.file
+
+	if details.deps == nil {
+		return
+	}
+
+	for _, name := range details.deps {
+		generateFileList(name)
+	}
+}
+
+//Function for executing and debugging exec.Cmd
 func checkCommand(cmd *exec.Cmd) {
 	var out bytes.Buffer
 	var stderr bytes.Buffer
@@ -63,11 +87,13 @@ func checkCommand(cmd *exec.Cmd) {
 	}
 }
 
+//Generating hash from timestamp
 func hashTime(timeStamp string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(timeStamp), 14)
 	return string(bytes), err
 }
 
+//Comparing hashes of the current timestamp with the previous one
 func checkTimeStamp(timeStamp string, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(timeStamp))
 	return err == nil

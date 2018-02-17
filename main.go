@@ -12,6 +12,7 @@ func init() {
 	fileDetails = make(map[string]params)
 	newfileTimings = make(map[string]string)
 	oldfileTimings = make(map[string]string)
+	fileList = make(map[string]string)
 }
 
 func main() {
@@ -29,7 +30,7 @@ func main() {
 
 	//Parsing the Recipe File
 	parse(Recipe)
-
+	generateFileList(compilerDetails.start)
 	var jsonData []byte
 
 	if _, err := os.Stat("Cooking/details.json"); err == nil {
@@ -50,12 +51,12 @@ func main() {
 
 		structToMap(hashJSONold.Body.Entity)
 
-		compareAndCompile(compilerDetails.start)
+		compareAndCompile()
 
 	} else {
 		_ = os.Mkdir("Cooking", 0777)
-		generateList(compilerDetails.start)
-		compileFirst(compilerDetails.start)
+		generateList()
+		compileFirst()
 	}
 
 	fmt.Println("All files Compiled...")
