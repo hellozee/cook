@@ -5,11 +5,7 @@ A Build System for Dummies, written in Golang.
 ### <u>Installation</u>
 
 ```bash
-git clone https://github.com/hellozee/Cook.git
-go get  -u golang.org/x/crypto/bcrypt
-cd Cook
-go build
-sudo cp Cook /usr/bin/
+go get -u github.com/hellozee/Cook
 ```
 
 
