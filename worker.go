@@ -8,15 +8,12 @@ import (
 )
 
 func structToMap(parsedStruct []entity) {
-
 	for _, item := range parsedStruct {
 		oldfileTimings[item.File] = item.Hash
 	}
-
 }
 
 func generateList() {
-
 	for _, value := range fileList {
 		file, err := os.Stat(value)
 		checkErr(err)
@@ -32,11 +29,10 @@ func generateList() {
 func compileFirst() {
 	//Iteratively generate .o files
 
-	for tag, file := range fileList {
-		fmt.Println("Compiling " + file)
-		cmd := exec.Command(compilerDetails.binary, "-c", file, "-o", "Cooking/"+tag+".o")
-		checkCommand(cmd)
-		tagList = append(tagList, "Cooking/"+tag+".o")
+	for key, value := range fileList {
+		fmt.Println("Compiling " + value)
+		cmd := exec.Command(compilerDetails.binary, "-c", value, "-o", "Cooking/"+key+".o")
+		go checkCommand(cmd)
 	}
 }
 
@@ -54,14 +50,13 @@ func compareAndCompile() {
 		if !checkTimeStamp(t.String(), oldfileTimings[value]) {
 			fmt.Println("Compiling " + value)
 			cmd := exec.Command(compilerDetails.binary, "-c", value, "-o", "Cooking/"+key+".o")
-			checkCommand(cmd)
+			go checkCommand(cmd)
 
 			oldfileTimings[value], err = hashTime(t.String())
 			checkErr(err)
 		}
 
 		hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity, entity{File: value, Hash: oldfileTimings[value]})
-		tagList = append(tagList, "Cooking/"+key+".o")
 	}
 }
 
@@ -69,11 +64,8 @@ func linkAll() {
 
 	//Compile all the generated .o files under the Cooking directory
 	fmt.Println("Linking files..")
-	args := []string{compilerDetails.binary, "-o", compilerDetails.name, compilerDetails.includes, compilerDetails.otherFlags}
-	for _, tag := range tagList {
-		args = append(args, tag)
-	}
-	args = append(args, compilerDetails.ldFlags)
+	args := []string{compilerDetails.binary, "-o", compilerDetails.name, compilerDetails.includes, compilerDetails.otherFlags,
+		"Cooking/*.o", compilerDetails.ldFlags}
 	cmd := exec.Command(os.Getenv("SHELL"), "-c", strings.Join(args, " "))
 	checkCommand(cmd)
 }

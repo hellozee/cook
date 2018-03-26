@@ -42,7 +42,6 @@ var newfileTimings map[string]string
 var oldfileTimings map[string]string
 var hashJSONold parent
 var hashJSONnew parent
-var tagList []string
 var fileList map[string]string
 
 //Stop Go from throwing warnings if a variable is not used
