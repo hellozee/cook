@@ -1,8 +1,16 @@
 package main
 
 import (
+	"strings"
 	"unicode/utf8"
 )
+
+type item struct {
+	typ  itemType
+	pos  int
+	val  string
+	line int
+}
 
 type itemType int
 
@@ -11,7 +19,8 @@ const (
 	itemEquals itemType = iota
 	itemSemicolon
 	itemLeftBrace
-	itemrRightBrace
+	itemRightBrace
+	itemString
 	//KeyWords
 	itemEntity
 	itemBinary
@@ -43,7 +52,19 @@ type lexer struct {
 	pos   int
 	start int
 	width int
+	items []item
 	line  int
+}
+
+func (lex *lexer) analyze() {
+	for lex.peek() != eof {
+		lex.next()
+		lex.isKeyword()
+		if lex.peek() == eof {
+			break
+		}
+		lex.isDelimiter()
+	}
 }
 
 func (lex *lexer) next() rune {
@@ -54,9 +75,11 @@ func (lex *lexer) next() rune {
 	nextRune, runeWidth := utf8.DecodeRuneInString(lex.input[lex.pos:])
 	lex.width = runeWidth
 	lex.pos += lex.width
+
 	if isWhiteSpace(nextRune) {
 		return lex.next()
 	}
+
 	if nextRune == '\n' {
 		lex.line++
 	}
@@ -74,6 +97,84 @@ func (lex *lexer) backup() {
 
 	if lex.width == 1 && lex.input[lex.pos] == '\n' {
 		lex.line--
+	}
+}
+
+func (lex *lexer) isKeyword() {
+	value := strings.TrimSpace(lex.input[lex.start:lex.pos])
+
+	if typeOf, ok := key[value]; ok {
+		tempItem := item{
+			typ:  typeOf,
+			pos:  lex.start,
+			val:  value,
+			line: lex.line,
+		}
+
+		lex.items = append(lex.items, tempItem)
+		lex.start = lex.pos
+	}
+}
+
+func (lex *lexer) isDelimiter() {
+	switch lex.input[lex.pos] {
+	case '{':
+		tempItem := item{
+			typ:  itemString,
+			pos:  lex.start,
+			val:  strings.TrimSpace(lex.input[lex.start:lex.pos]),
+			line: lex.line,
+		}
+		lex.items = append(lex.items, tempItem)
+
+		tempItem = item{
+			typ:  itemLeftBrace,
+			pos:  lex.pos,
+			val:  "{",
+			line: lex.line,
+		}
+		lex.items = append(lex.items, tempItem)
+
+		lex.start = lex.pos + 1
+
+	case '}':
+		tempItem := item{
+			typ:  itemRightBrace,
+			pos:  lex.pos,
+			val:  "}",
+			line: lex.line,
+		}
+		lex.items = append(lex.items, tempItem)
+
+		lex.start = lex.pos + 1
+
+	case ';':
+		tempItem := item{
+			typ:  itemString,
+			pos:  lex.start,
+			val:  strings.TrimSpace(lex.input[lex.start:lex.pos]),
+			line: lex.line,
+		}
+		lex.items = append(lex.items, tempItem)
+
+		tempItem = item{
+			typ:  itemSemicolon,
+			pos:  lex.pos,
+			val:  ";",
+			line: lex.line,
+		}
+		lex.items = append(lex.items, tempItem)
+		lex.start = lex.pos + 1
+
+	case '=':
+		tempItem := item{
+			typ:  itemEquals,
+			pos:  lex.pos,
+			val:  "=",
+			line: lex.line,
+		}
+		lex.items = append(lex.items, tempItem)
+		lex.start = lex.pos + 1
 	}
 }
 
