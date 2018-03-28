@@ -1,10 +1,14 @@
 package parser
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+	"unicode/utf8"
+)
 
 type item struct {
 	typ  itemType
-	pos  Pos
+	pos  int
 	val  string
 	line int
 }
@@ -30,14 +34,14 @@ const (
 	itemError itemType = iota
 	itemEOF
 	itemSpace
-	itemLeftBrackets
-	itemRightBrackets
+	itemLeftDelim
+	itemRightDelim
 	itemColon
 	itemComma
+	itemString
 	itemKeyword
 	itemFile
 	itemDeps
-	itemString
 	itemCompiler
 	itemBinary
 	itemName
@@ -47,10 +51,74 @@ const (
 	itemOtherFlags
 )
 
-// Pos represents a byte position in the original input text from which
-// this template was parsed.
-type Pos int
+var key = map[string]itemType{
+	"file":     itemFile,
+	"deps":     itemDeps,
+	"$":        itemCompiler,
+	"binary":   itemBinary,
+	"name":     itemName,
+	"start":    itemStart,
+	"ldflags":  itemLdFlags,
+	"includes": itemIncludes,
+	"others":   itemOtherFlags,
+}
 
-func (p Pos) Position() Pos {
-	return p
+const eof = -1
+
+type lexer struct {
+	name       string
+	input      string
+	leftDelim  string
+	rightDelim string
+	pos        int
+	start      int
+	width      int
+	items      chan item
+	parenDepth int
+	line       int
+}
+
+type stateFn func(*lexer) stateFn
+
+func (self *lexer) next() rune {
+	if self.pos >= len(self.input) {
+		self.width = 0
+		return eof
+	}
+
+	nextRune, runeWidth := utf8.DecodeRuneInString(self.input[self.pos:])
+	self.width = runeWidth
+	self.pos += self.width
+	if nextRune == '\n' {
+		self.line++
+	}
+	return nextRune
+}
+
+func (self *lexer) peek() rune {
+	nextRune := self.next()
+	self.backup()
+	return nextRune
+}
+
+func (self *lexer) backup() {
+	self.pos -= self.width
+	if self.width == 1 && self.input[self.pos] == '\n' {
+		self.line--
+	}
+}
+
+func (self *lexer) emit(t itemType) {
+	self.items <- item{t, self.start, self.input[self.start:self.pos], self.line}
+
+	switch t {
+	case itemString, itemLeftDelim, itemRightDelim:
+		self.line += strings.Count(self.input[self.start:self.pos], "\n")
+	}
+	self.start = self.pos
+}
+
+func (self *lexer) ignore() {
+	self.line += strings.Count(self.input[self.start:self.pos], "\n")
+	self.start = self.pos
 }
