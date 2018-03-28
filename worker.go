@@ -18,8 +18,7 @@ func generateList() {
 		file, err := os.Stat(value)
 		checkErr(err)
 		t := file.ModTime()
-		hash, err := hashTime(t.String())
-		checkErr(err)
+		hash := hashTime(t.String())
 
 		newfileTimings[value] = hash
 		hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity, entity{File: value, Hash: hash})
@@ -32,7 +31,7 @@ func compileFirst() {
 	for key, value := range fileList {
 		fmt.Println("Compiling " + value)
 		cmd := exec.Command(compilerDetails.binary, "-c", value, "-o", "Cooking/"+key+".o")
-		go checkCommand(cmd)
+		checkCommand(cmd)
 	}
 }
 
@@ -46,14 +45,14 @@ func compareAndCompile() {
 
 		checkErr(err)
 		t := file.ModTime()
+		timeStamp := strings.Replace(t.String(), " ", "", -1)
 
-		if !checkTimeStamp(t.String(), oldfileTimings[value]) {
+		if !checkTimeStamp(timeStamp, oldfileTimings[value]) {
 			fmt.Println("Compiling " + value)
 			cmd := exec.Command(compilerDetails.binary, "-c", value, "-o", "Cooking/"+key+".o")
-			go checkCommand(cmd)
+			checkCommand(cmd)
 
-			oldfileTimings[value], err = hashTime(t.String())
-			checkErr(err)
+			oldfileTimings[value] = hashTime(t.String())
 		}
 
 		hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity, entity{File: value, Hash: oldfileTimings[value]})

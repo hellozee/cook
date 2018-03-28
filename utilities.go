@@ -6,8 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type compiler struct {
@@ -87,15 +85,18 @@ func checkCommand(cmd *exec.Cmd) {
 }
 
 //Generating hash from timestamp
-func hashTime(timeStamp string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(timeStamp), 14)
-	return string(bytes), err
+func hashTime(timeStamp string) string {
+	timeStamp = strings.Replace(timeStamp, " ", "", -1)
+	return timeStamp
 }
 
 //Comparing hashes of the current timestamp with the previous one
 func checkTimeStamp(timeStamp string, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(timeStamp))
-	return err == nil
+
+	if timeStamp == hash {
+		return true
+	}
+	return false
 }
 
 func fillCompilerDetails(identifier string, param string) {
