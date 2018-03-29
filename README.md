@@ -30,43 +30,43 @@ Cook is pretty strict on syntax, we have little blocks of what I call entity, th
 - `includes` : Same as Linker directives but for mentioning special include folders.
 - `others` : Some other flags like `-Wall`
 
-So how do we separate normal entity from the special compiler entity? Simple, there is special name given to this entity which is `$` , it is reserved and hence can't be used for normal entities, also naming an entity is compulsory as it also be used for figuring out the dependencies since the same name would be used to in the `deps` identifier.
+So how do we separate normal entity from the special compiler entity? Simple, there is special name given to this entity which is `#` , it is reserved and hence can't be used for normal entities, also naming an entity is compulsory as it also be used for figuring out the dependencies since the same name would be used to in the `deps` identifier. `;` is used as delimiter
 
 ##### Example:
 
 ```
-${
-	binary = 'g++'
-	name = 'GLWindow'
-	start = 'main'
-	ldflags = '-lSDL2 -lGLEW -lGL -lSOIL'
-	includes = ''
-	others = '-Wall -Wextra'
+entity #{
+        binary = g++;
+        name = GLWindow;
+        start = main;
+        ldflags = -lSDL2 -lGLEW -lGL -lSOIL;
+        includes = ;
+        others = -Wall -Wextra;
 }
 
-main{
-	file = 'main.cpp'
-	deps = 'camera display mesh shader'
+entity main{
+        file = main.cpp;
+        deps = camera display mesh shader;
 }
 
-camera{
-	file = 'ui/camera.cpp'
-	deps = ''
+entity camera{
+        file = ui/camera.cpp;
+        deps = ;
 }
 
-display{
-	file = 'ui/display.cpp'
-	deps = ''
+entity display{
+        file = ui/display.cpp;
+        deps = ;
 }
 
-mesh{
-	file = 'draw/mesh.cpp'
-	deps = ''
+entity mesh{
+        file = draw/mesh.cpp;
+        deps = ;
 }
 
-shader{
-	file = 'draw/shader.cpp'
-	deps = ''
+entity shader{
+        file = draw/shader.cpp;
+        deps = ;
 }
 ```
 
@@ -74,10 +74,9 @@ This is the `Recipe` file I am using for practicing `OpenGL` , you can try it on
 
 After creating the `Recipe` file you just execute Cook in the directory containing the `Recipe` file. 
 
-**Note:**  The parser is still not so mature so please pay attention to the line breaks and the quotes used in the example file, they should be implemented in your file in a similar manner, also this only supports C/C++, sorry for the inconvenience, it is still an WIP.
+**Note:**  This only works for C/C++
 
 ### ToDos:
 
 - More verbose error messages for proper debugging.
 - Make the code more structured.
-- Make a more mature parser
