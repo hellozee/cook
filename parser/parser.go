@@ -1,7 +1,8 @@
-package main
+package parser
 
 import (
 	"errors"
+	"strings"
 )
 
 type compiler struct {
@@ -35,14 +36,14 @@ func (par *parser) next() item {
 }
 
 func (par *parser) parse() error {
-	/*
-		isCompiler := false
-		enityName := ""
-		identifier := itemNULL
-		params := ""
-	*/
-	for par.next().typ != itemEOF {
 
+	isCompiler := false
+	enityName := ""
+	identifier := itemNULL
+	params := ""
+
+	for par.nextItem.typ != itemEOF {
+		par.next()
 		if par.currentItem.typ == itemEquals {
 			if par.nextItem.typ != itemString {
 				if par.prevItem.typ == itemEntity {
@@ -56,6 +57,13 @@ func (par *parser) parse() error {
 			if par.nextItem.typ < itemKeyWord &&
 				par.nextItem.typ != itemRightBrace {
 				return par.reportError("}")
+			}
+
+			if isCompiler {
+				fillCompilerDetails(identifier, params)
+
+			} else {
+				fillFileDetails(enityName, identifier, params)
 			}
 		}
 
@@ -77,82 +85,56 @@ func (par *parser) parse() error {
 				if par.nextItem.typ != itemLeftBrace {
 					return par.reportError("{")
 				}
+
+				if par.currentItem.val == "#" {
+					isCompiler = true
+				} else {
+					isCompiler = false
+				}
+				enityName = par.currentItem.val
+
 			} else {
 				if par.nextItem.typ != itemSemicolon {
 					return par.reportError(";")
 				}
+				params = par.currentItem.val
 			}
 
 		}
 
 		if par.currentItem.typ == itemEntity {
+			if par.nextItem.typ != itemString {
+				return par.reportError("entity name")
+			}
+
+			if par.currentItem.val == "#" {
+				isCompiler = true
+			} else {
+				isCompiler = false
+			}
+
+			enityName = par.currentItem.val
+		}
+
+		if par.currentItem.typ > itemKeyWord {
 			if par.nextItem.typ != itemEquals {
 				return par.reportError("=")
 			}
-		}
 
-		if par.currentItem.typ == itemBinary {
-			if par.nextItem.typ != itemEquals {
-				par.reportError("=")
-			}
-		}
-
-		if par.currentItem.typ == itemName {
-			if par.nextItem.typ != itemEquals {
-				return par.reportError("=")
-			}
-		}
-
-		if par.currentItem.typ == itemStart {
-			if par.nextItem.typ != itemEquals {
-				return par.reportError("=")
-			}
-		}
-
-		if par.currentItem.typ == itemLdFlags {
-			if par.nextItem.typ != itemEquals {
-				return par.reportError("=")
-			}
-		}
-
-		if par.currentItem.typ == itemIncludes {
-			if par.nextItem.typ != itemEquals {
-				return par.reportError("=")
-			}
-		}
-
-		if par.currentItem.typ == itemOthers {
-			if par.nextItem.typ != itemEquals {
-				return par.reportError("=")
-			}
-		}
-
-		if par.currentItem.typ == itemFile {
-			if par.nextItem.typ != itemEquals {
-				return par.reportError("=")
-			}
-		}
-
-		if par.currentItem.typ == itemDeps {
-			if par.nextItem.typ != itemEquals {
-				return par.reportError("=")
-			}
+			identifier = par.currentItem.typ
 		}
 	}
 
 	return nil
-
 }
 
 func newParser(file string) *parser {
 	lex := newLexer(file)
 	lex.analyze()
 	par := parser{
-		input:       lex.items,
-		pos:         0,
-		currentItem: lex.items[0],
-		prevItem:    item{typ: itemNULL, pos: -1, val: "", line: -1},
-		nextItem:    lex.items[1],
+		input:    lex.items,
+		pos:      0,
+		nextItem: lex.items[0],
 	}
 	return &par
 }
@@ -165,42 +147,48 @@ func (par *parser) reportError(expected string) error {
 var compilerDetails compiler
 var fileDetails map[string]params
 
-func main() {
-	temp := `entity = #{
-		binary = g++;
-		name = GLWindow;
-		start = main;
-		ldflags = -lSDL2 -lGLEW -lGL -lSOIL;
-		includes = ;
-		others = -Wall -Wextra;
+func fillCompilerDetails(identifier itemType, param string) {
+	if identifier == itemBinary {
+		compilerDetails.binary = param
 	}
-	
-	entity = main{
-		file = main.cpp;
-		deps = camera display mesh shader;
+	if identifier == itemName {
+		compilerDetails.name = param
 	}
-	
-	entity = camera{
-		file = ui/camera.cpp;
-		deps = ;
+	if identifier == itemStart {
+		compilerDetails.start = param
 	}
-	
-	entity = display{
-		file = ui/display.cpp;
-		deps = ;
+	if identifier == itemLdFlags {
+		compilerDetails.ldFlags = param
 	}
-	
-	entity = mesh{
-		file = draw/mesh.cpp;
-		deps = ;
+	if identifier == itemIncludes {
+		compilerDetails.includes = param
 	}
-	
-	entity = shader{
-		file = draw/shader.cpp;
-		deps = ;
-	}`
+	if identifier == itemOthers {
+		compilerDetails.otherFlags = param
+	}
+}
 
-	par := newParser(temp)
-	par.parse()
+func fillFileDetails(name string, identifier itemType, param string) {
+	var temp params
 
+	if identifier == itemFile {
+		temp.file = param
+	} else if param != "" {
+		temp = fileDetails[name]
+	}
+
+	if param == "" {
+		return
+	}
+
+	if identifier == itemDeps {
+		paramArray := strings.Split(param, " ")
+		temp.deps = paramArray
+	}
+
+	fileDetails[name] = temp
+}
+
+func init() {
+	fileDetails = make(map[string]params)
 }
