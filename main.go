@@ -17,7 +17,6 @@ func init() {
 }
 
 func main() {
-
 	//Reading the Recipe File
 	temp, err := ioutil.ReadFile("Recipe")
 

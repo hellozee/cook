@@ -5,11 +5,7 @@ A Build System for Dummies, written in Golang.
 ### <u>Installation</u>
 
 ```bash
-git clone https://github.com/hellozee/Cook.git
-go get  -u golang.org/x/crypto/bcrypt
-cd Cook
-go build
-sudo cp Cook /usr/bin/
+go get -u github.com/hellozee/Cook
 ```
 
 
@@ -78,10 +74,10 @@ This is the `Recipe` file I am using for practicing `OpenGL` , you can try it on
 
 After creating the `Recipe` file you just execute Cook in the directory containing the `Recipe` file. 
 
-**Note:**  The parser is still not so mature so please pay attention to the line breaks in the example file, they should be implemented in your file in a similar manner, also this only supports C/C++, sorry for the inconvenience, it is still an WIP.
+**Note:**  The parser is still not so mature so please pay attention to the line breaks and the quotes used in the example file, they should be implemented in your file in a similar manner, also this only supports C/C++, sorry for the inconvenience, it is still an WIP.
 
 ### ToDos:
 
 - More verbose error messages for proper debugging.
 - Make the code more structured.
-- Optimize the code, the program is far slower compared to the other mature build systems.
+- Make a more mature parser
