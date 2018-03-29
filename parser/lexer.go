@@ -16,13 +16,15 @@ type itemType int
 
 const (
 	// Literal terminator symbols
-	itemEquals itemType = iota
+	itemEOF itemType = iota
+	itemNULL
+	itemEquals
 	itemSemicolon
 	itemLeftBrace
 	itemRightBrace
 	itemString
-	//KeyWords
 	itemEntity
+	itemKeyWord
 	itemBinary
 	itemName
 	itemStart
@@ -65,6 +67,8 @@ func (lex *lexer) analyze() {
 		}
 		lex.isDelimiter()
 	}
+
+	lex.items = append(lex.items, item{typ: itemEOF, pos: lex.pos + 1, val: "EOF", line: lex.line})
 }
 
 func (lex *lexer) next() rune {
@@ -176,6 +180,18 @@ func (lex *lexer) isDelimiter() {
 		lex.items = append(lex.items, tempItem)
 		lex.start = lex.pos + 1
 	}
+}
+
+func newLexer(file string) *lexer {
+	lex := lexer{
+		input: file,
+		pos:   0,
+		start: 0,
+		width: len(file),
+		line:  0,
+	}
+
+	return &lex
 }
 
 func isWhiteSpace(currentRune rune) bool {
