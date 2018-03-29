@@ -68,7 +68,8 @@ func (lex *lexer) analyze() {
 		lex.isDelimiter()
 	}
 
-	lex.items = append(lex.items, item{typ: itemEOF, pos: lex.pos + 1, val: "EOF", line: lex.line})
+	lex.items = append(lex.items, item{typ: itemEOF, pos: lex.pos + 1,
+		val: "EOF", line: lex.line})
 }
 
 func (lex *lexer) next() rune {

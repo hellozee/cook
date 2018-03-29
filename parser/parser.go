@@ -46,38 +46,40 @@ func (par *parser) parse() error {
 		if par.currentItem.typ == itemEquals {
 			if par.nextItem.typ != itemString {
 				if par.prevItem.typ == itemEntity {
-					return errors.New("Syntax error on line " + string(par.currentItem.line) + ": Expected an entity name, found a " + par.nextItem.val)
+					return par.reportError("entity")
 				}
-				return errors.New("Syntax error on line " + string(par.currentItem.line) + ": Expected a parameter, found a " + par.nextItem.val)
+				return par.reportError("parameter(s)")
 			}
 		}
 
 		if par.currentItem.typ == itemSemicolon {
-			if par.nextItem.typ < itemKeyWord && par.nextItem.typ != itemRightBrace {
-				return errors.New("Syntax error on line " + string(par.currentItem.line) + ": Expected a }, found " + par.nextItem.val)
+			if par.nextItem.typ < itemKeyWord &&
+				par.nextItem.typ != itemRightBrace {
+				return par.reportError("}")
 			}
 		}
 
 		if par.currentItem.typ == itemLeftBrace {
 			if par.nextItem.typ < itemKeyWord {
-				return errors.New("Syntax error on line " + string(par.currentItem.line) + ": Expected a identifier, found " + par.nextItem.val)
+				return par.reportError("identifier")
 			}
 		}
 
 		if par.currentItem.typ == itemRightBrace {
-			if par.nextItem.typ != itemEOF && par.nextItem.typ != itemEntity {
-				return errors.New("Syntax error on line " + string(par.currentItem.line) + ": Expected entity, found " + par.nextItem.val)
+			if par.nextItem.typ != itemEOF &&
+				par.nextItem.typ != itemEntity {
+				return par.reportError("entity")
 			}
 		}
 
 		if par.currentItem.typ == itemString {
 			if par.prevItem.typ == itemEntity {
 				if par.nextItem.typ != itemLeftBrace {
-					return errors.New("Syntax error on line " + string(par.currentItem.line) + ": Expected a {, found " + par.nextItem.val)
+					return par.reportError("{")
 				}
 			} else {
 				if par.nextItem.typ != itemSemicolon {
-					return errors.New("Syntax error on line " + string(par.currentItem.line) + ": Expected a ;, found " + par.nextItem.val)
+					return par.reportError(";")
 				}
 			}
 
@@ -85,55 +87,55 @@ func (par *parser) parse() error {
 
 		if par.currentItem.typ == itemEntity {
 			if par.nextItem.typ != itemEquals {
-				return errors.New("Syntax error on line " + string(par.currentItem.line) + ": Expected a =, found " + par.nextItem.val)
+				return par.reportError("=")
 			}
 		}
 
 		if par.currentItem.typ == itemBinary {
 			if par.nextItem.typ != itemEquals {
-				return errors.New("Syntax error on line " + string(par.currentItem.line) + ": Expected a =, found " + par.nextItem.val)
+				par.reportError("=")
 			}
 		}
 
 		if par.currentItem.typ == itemName {
 			if par.nextItem.typ != itemEquals {
-				return errors.New("Syntax error on line " + string(par.currentItem.line) + ": Expected a =, found " + par.nextItem.val)
+				return par.reportError("=")
 			}
 		}
 
 		if par.currentItem.typ == itemStart {
 			if par.nextItem.typ != itemEquals {
-				return errors.New("Syntax error on line " + string(par.currentItem.line) + ": Expected a =, found " + par.nextItem.val)
+				return par.reportError("=")
 			}
 		}
 
 		if par.currentItem.typ == itemLdFlags {
 			if par.nextItem.typ != itemEquals {
-				return errors.New("Syntax error on line " + string(par.currentItem.line) + ": Expected a =, found " + par.nextItem.val)
+				return par.reportError("=")
 			}
 		}
 
 		if par.currentItem.typ == itemIncludes {
 			if par.nextItem.typ != itemEquals {
-				return errors.New("Syntax error on line " + string(par.currentItem.line) + ": Expected a =, found " + par.nextItem.val)
+				return par.reportError("=")
 			}
 		}
 
 		if par.currentItem.typ == itemOthers {
 			if par.nextItem.typ != itemEquals {
-				return errors.New("Syntax error on line " + string(par.currentItem.line) + ": Expected a =, found " + par.nextItem.val)
+				return par.reportError("=")
 			}
 		}
 
 		if par.currentItem.typ == itemFile {
 			if par.nextItem.typ != itemEquals {
-				return errors.New("Syntax error on line " + string(par.currentItem.line) + ": Expected a =, found " + par.nextItem.val)
+				return par.reportError("=")
 			}
 		}
 
 		if par.currentItem.typ == itemDeps {
 			if par.nextItem.typ != itemEquals {
-				return errors.New("Syntax error on line " + string(par.currentItem.line) + ": Expected a =, found " + par.nextItem.val)
+				return par.reportError("=")
 			}
 		}
 	}
@@ -153,6 +155,11 @@ func newParser(file string) *parser {
 		nextItem:    lex.items[1],
 	}
 	return &par
+}
+
+func (par *parser) reportError(expected string) error {
+	return errors.New("Syntax error on line " + string(par.currentItem.line) +
+		": Expected " + expected + " , found " + par.nextItem.val)
 }
 
 var compilerDetails compiler
