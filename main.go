@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+
+	ps "local.proj/Cook/parser"
 )
 
 func init() {
 	//Initializing all the hash maps
-	fileDetails = make(map[string]params)
 	newfileTimings = make(map[string]string)
 	oldfileTimings = make(map[string]string)
 	fileList = make(map[string]string)
@@ -29,8 +30,9 @@ func main() {
 	Recipe := string(temp)
 
 	//Parsing the Recipe File
-	parse(Recipe)
-	generateFileList(compilerDetails.start)
+	parser := ps.NewParser(Recipe)
+	parser.Parse()
+	generateFileList(ps.CompilerDetails.Start)
 	var jsonData []byte
 
 	if _, err := os.Stat("Cooking/details.json"); err == nil {

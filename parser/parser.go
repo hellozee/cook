@@ -6,17 +6,17 @@ import (
 )
 
 type compiler struct {
-	binary     string
-	name       string
-	start      string
-	ldFlags    string
-	includes   string
-	otherFlags string
+	Binary     string
+	Name       string
+	Start      string
+	LdFlags    string
+	Includes   string
+	OtherFlags string
 }
 
 type params struct {
-	file string
-	deps []string
+	File string
+	Deps []string
 }
 
 type parser struct {
@@ -35,7 +35,7 @@ func (par *parser) next() item {
 	return par.currentItem
 }
 
-func (par *parser) parse() error {
+func (par *parser) Parse() error {
 
 	isCompiler := false
 	enityName := ""
@@ -128,7 +128,12 @@ func (par *parser) parse() error {
 	return nil
 }
 
-func newParser(file string) *parser {
+func (par *parser) reportError(expected string) error {
+	return errors.New("Syntax error on line " + string(par.currentItem.line) +
+		": Expected " + expected + " , found " + par.nextItem.val)
+}
+
+func NewParser(file string) parser {
 	lex := newLexer(file)
 	lex.analyze()
 	par := parser{
@@ -136,35 +141,33 @@ func newParser(file string) *parser {
 		pos:      0,
 		nextItem: lex.items[0],
 	}
-	return &par
+	return par
 }
 
-func (par *parser) reportError(expected string) error {
-	return errors.New("Syntax error on line " + string(par.currentItem.line) +
-		": Expected " + expected + " , found " + par.nextItem.val)
-}
+//CompilerDetails ...
+var CompilerDetails compiler
 
-var compilerDetails compiler
-var fileDetails map[string]params
+//FileDetails ...
+var FileDetails map[string]params
 
 func fillCompilerDetails(identifier itemType, param string) {
 	if identifier == itemBinary {
-		compilerDetails.binary = param
+		CompilerDetails.Binary = param
 	}
 	if identifier == itemName {
-		compilerDetails.name = param
+		CompilerDetails.Name = param
 	}
 	if identifier == itemStart {
-		compilerDetails.start = param
+		CompilerDetails.Start = param
 	}
 	if identifier == itemLdFlags {
-		compilerDetails.ldFlags = param
+		CompilerDetails.LdFlags = param
 	}
 	if identifier == itemIncludes {
-		compilerDetails.includes = param
+		CompilerDetails.Includes = param
 	}
 	if identifier == itemOthers {
-		compilerDetails.otherFlags = param
+		CompilerDetails.OtherFlags = param
 	}
 }
 
@@ -172,9 +175,9 @@ func fillFileDetails(name string, identifier itemType, param string) {
 	var temp params
 
 	if identifier == itemFile {
-		temp.file = param
+		temp.File = param
 	} else if param != "" {
-		temp = fileDetails[name]
+		temp = FileDetails[name]
 	}
 
 	if param == "" {
@@ -183,12 +186,12 @@ func fillFileDetails(name string, identifier itemType, param string) {
 
 	if identifier == itemDeps {
 		paramArray := strings.Split(param, " ")
-		temp.deps = paramArray
+		temp.Deps = paramArray
 	}
 
-	fileDetails[name] = temp
+	FileDetails[name] = temp
 }
 
 func init() {
-	fileDetails = make(map[string]params)
+	FileDetails = make(map[string]params)
 }
