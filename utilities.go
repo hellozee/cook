@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-  "strings"
+	"strings"
 
-	"golang.org/x/crypto/bcrypt"
 	ps "local.proj/Cook/parser"
 )
 

@@ -32,7 +32,7 @@ func compileFirst() {
 
 	for key, value := range fileList {
 		fmt.Println("Compiling " + value)
-		cmd := exec.Command(ps.CompilerDetails.Binary, "-c", file, "-o", "Cooking/"+tag+".o")
+		cmd := exec.Command(ps.CompilerDetails.Binary, "-c", value, "-o", "Cooking/"+key+".o")
 		checkCommand(cmd)
 	}
 }
