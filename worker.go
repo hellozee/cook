@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	ps "local.proj/Cook/parser"
 )
 
 func structToMap(parsedStruct []entity) {
@@ -30,7 +32,7 @@ func compileFirst() {
 
 	for key, value := range fileList {
 		fmt.Println("Compiling " + value)
-		cmd := exec.Command(compilerDetails.binary, "-c", value, "-o", "Cooking/"+key+".o")
+		cmd := exec.Command(ps.CompilerDetails.Binary, "-c", file, "-o", "Cooking/"+tag+".o")
 		checkCommand(cmd)
 	}
 }
@@ -49,7 +51,7 @@ func compareAndCompile() {
 
 		if !checkTimeStamp(timeStamp, oldfileTimings[value]) {
 			fmt.Println("Compiling " + value)
-			cmd := exec.Command(compilerDetails.binary, "-c", value, "-o", "Cooking/"+key+".o")
+			cmd := exec.Command(ps.CompilerDetails.Binary, "-c", value, "-o", "Cooking/"+key+".o")
 			checkCommand(cmd)
 
 			oldfileTimings[value] = hashTime(t.String())
@@ -63,8 +65,8 @@ func linkAll() {
 
 	//Compile all the generated .o files under the Cooking directory
 	fmt.Println("Linking files..")
-	args := []string{compilerDetails.binary, "-o", compilerDetails.name, compilerDetails.includes, compilerDetails.otherFlags,
-		"Cooking/*.o", compilerDetails.ldFlags}
+	args := []string{ps.CompilerDetails.Binary, "-o", ps.CompilerDetails.Name, ps.CompilerDetails.Includes, ps.CompilerDetails.OtherFlags,
+		"Cooking/*.o", ps.CompilerDetails.LdFlags}
 	cmd := exec.Command(os.Getenv("SHELL"), "-c", strings.Join(args, " "))
 	checkCommand(cmd)
 }
