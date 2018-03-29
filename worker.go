@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
-	ps "local.proj/Cook/parser"
+	ps "Cook/parser"
 )
 
 func structToMap(parsedStruct []entity) {

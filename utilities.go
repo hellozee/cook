@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
-	ps "local.proj/Cook/parser"
+	ps "Cook/parser"
 )
 
 type entity struct {
@@ -78,9 +78,5 @@ func hashTime(timeStamp string) string {
 
 //Comparing hashes of the current timestamp with the previous one
 func checkTimeStamp(timeStamp string, hash string) bool {
-
-	if timeStamp == hash {
-		return true
-	}
-	return false
+	return timeStamp == hash
 }

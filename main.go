@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	ps "local.proj/Cook/parser"
+	ps "Cook/parser"
 )
 
 func init() {
@@ -30,7 +30,8 @@ func main() {
 
 	//Parsing the Recipe File
 	parser := ps.NewParser(Recipe)
-	parser.Parse()
+	err = parser.Parse()
+	checkErr(err)
 	generateFileList(ps.CompilerDetails.Start)
 	var jsonData []byte
 
