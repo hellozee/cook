@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -16,13 +17,42 @@ func init() {
 	fileList = make(map[string]string)
 }
 
+var quiteFlag = flag.Bool("quiet", false, "To not show any output")
+var cleanFlag = flag.Bool("clean", false, "To clean the cached data and rebuild the project")
+var helpFlag = flag.Bool("help", false, "To show this help message")
+var verboseFlag = flag.Bool("verbose", false, "To increase the level of verbosity")
+
 func main() {
+
+	flag.Parse()
+
+	help := `
+	Usage: cook [OPTIONS]
+
+	--help:
+		To show this help message
+
+	--quite:
+		To not show any output
+
+	--clean:
+		To clean the cached data and perform a clean build
+
+	--verbose:
+		To increase the verbosity level
+	`
+	if *helpFlag == true {
+		fmt.Println(help)
+		return
+	}
+
 	//Reading the Recipe File
 	temp, err := ioutil.ReadFile("Recipe")
 
 	if err != nil {
 		//Missing Recipe File
-		os.Stderr.WriteString("No sane Recipe File found.\nMake sure you have a Recipe file with proper syntax\n")
+		os.Stderr.WriteString("No sane Recipe File found.\n" +
+			"Make sure you have a Recipe file with proper syntax\n")
 		return
 	}
 
@@ -35,9 +65,11 @@ func main() {
 	generateFileList(parser, parser.CompilerDetails.Start)
 	var jsonData []byte
 
-	if _, err := os.Stat("Cooking/details.json"); err == nil {
+	if _, err := os.Stat("Cooking/details.json"); err == nil &&
+		*cleanFlag == false {
 
-		//Reading the details.json which contains the file names against their generated timestamps
+		//Reading the details.json which contains the file names
+		//against their generated timestamps
 		jsonFile, err := os.Open("Cooking/details.json")
 		defer jsonFile.Close()
 
@@ -46,7 +78,8 @@ func main() {
 
 		if err != nil {
 			//Someone has tampered with the JSON file
-			os.Stderr.WriteString("Error parsing Cooking/details.json\nPlease run the program again\n")
+			os.Stderr.WriteString("Error parsing Cooking/details.json\n" +
+				"Please run the program again\n")
 			os.Remove("Cooking/details.json")
 			return
 		}
@@ -61,12 +94,15 @@ func main() {
 		compileFirst(parser)
 	}
 
-	fmt.Println("All files Compiled...")
+	if *quiteFlag == false {
+		fmt.Println("All files Compiled...")
+	}
 
 	jsonData, err = json.MarshalIndent(hashJSONnew, "", " ")
 	checkErr(err)
 
-	file, err := os.OpenFile("Cooking/details.json", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0777)
+	file, err := os.OpenFile("Cooking/details.json",
+		os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0777)
 	checkErr(err)
 	defer file.Close()
 

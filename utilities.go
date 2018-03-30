@@ -60,6 +60,9 @@ func checkCommand(cmd *exec.Cmd) {
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
 	err := cmd.Run()
+	if *verboseFlag == true {
+		fmt.Println(strings.Join(cmd.Args, " "))
+	}
 	if err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 	}
