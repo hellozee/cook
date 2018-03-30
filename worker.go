@@ -23,21 +23,23 @@ func generateList() {
 		hash := hashTime(t.String())
 
 		newfileTimings[value] = hash
-		hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity, entity{File: value, Hash: hash})
+		hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity,
+			entity{File: value, Hash: hash})
 	}
 }
 
-func compileFirst() {
+func compileFirst(par ps.Parser) {
 	//Iteratively generate .o files
 
 	for key, value := range fileList {
 		fmt.Println("Compiling " + value)
-		cmd := exec.Command(ps.CompilerDetails.Binary, "-c", value, "-o", "Cooking/"+key+".o")
+		cmd := exec.Command(par.CompilerDetails.Binary, "-c", value,
+			"-o", "Cooking/"+key+".o")
 		checkCommand(cmd)
 	}
 }
 
-func compareAndCompile() {
+func compareAndCompile(par ps.Parser) {
 	//Compare the file hash with current hash if do not match generate .o file
 	//also replace the current hash with the new hash
 
@@ -51,22 +53,25 @@ func compareAndCompile() {
 
 		if !checkTimeStamp(timeStamp, oldfileTimings[value]) {
 			fmt.Println("Compiling " + value)
-			cmd := exec.Command(ps.CompilerDetails.Binary, "-c", value, "-o", "Cooking/"+key+".o")
+			cmd := exec.Command(par.CompilerDetails.Binary, "-c", value,
+				"-o", "Cooking/"+key+".o")
 			checkCommand(cmd)
 
 			oldfileTimings[value] = hashTime(t.String())
 		}
 
-		hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity, entity{File: value, Hash: oldfileTimings[value]})
+		hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity,
+			entity{File: value, Hash: oldfileTimings[value]})
 	}
 }
 
-func linkAll() {
+func linkAll(par ps.Parser) {
 
 	//Compile all the generated .o files under the Cooking directory
 	fmt.Println("Linking files..")
-	args := []string{ps.CompilerDetails.Binary, "-o", ps.CompilerDetails.Name, ps.CompilerDetails.Includes, ps.CompilerDetails.OtherFlags,
-		"Cooking/*.o", ps.CompilerDetails.LdFlags}
+	args := []string{par.CompilerDetails.Binary, "-o", par.CompilerDetails.Name,
+		par.CompilerDetails.Includes, par.CompilerDetails.OtherFlags,
+		"Cooking/*.o", par.CompilerDetails.LdFlags}
 	cmd := exec.Command(os.Getenv("SHELL"), "-c", strings.Join(args, " "))
 	checkCommand(cmd)
 }

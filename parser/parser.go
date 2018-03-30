@@ -19,15 +19,18 @@ type params struct {
 	Deps []string
 }
 
-type parser struct {
-	input       []item
-	pos         int
-	currentItem item
-	prevItem    item
-	nextItem    item
+//The Parser Data Structure
+type Parser struct {
+	input           []item
+	pos             int
+	currentItem     item
+	prevItem        item
+	nextItem        item
+	CompilerDetails compiler
+	FileDetails     map[string]params
 }
 
-func (par *parser) next() item {
+func (par *Parser) next() item {
 	par.prevItem = par.currentItem
 	par.currentItem = par.nextItem
 	par.pos++
@@ -35,7 +38,8 @@ func (par *parser) next() item {
 	return par.currentItem
 }
 
-func (par *parser) Parse() error {
+//Parse to parse the the Recipe File
+func (par *Parser) Parse() error {
 
 	isCompiler := false
 	enityName := ""
@@ -60,10 +64,10 @@ func (par *parser) Parse() error {
 			}
 
 			if isCompiler {
-				fillCompilerDetails(identifier, params)
+				par.fillCompilerDetails(identifier, params)
 
 			} else {
-				fillFileDetails(enityName, identifier, params)
+				par.fillFileDetails(enityName, identifier, params)
 			}
 		}
 
@@ -128,15 +132,16 @@ func (par *parser) Parse() error {
 	return nil
 }
 
-func (par *parser) reportError(expected string) error {
+func (par *Parser) reportError(expected string) error {
 	return errors.New("Syntax error on line " + string(par.currentItem.line) +
 		": Expected " + expected + " , found " + par.nextItem.val)
 }
 
-func NewParser(file string) parser {
+//NewParser The Parser constructor
+func NewParser(file string) Parser {
 	lex := newLexer(file)
 	lex.analyze()
-	par := parser{
+	par := Parser{
 		input:    lex.items,
 		pos:      0,
 		nextItem: lex.items[0],
@@ -144,40 +149,34 @@ func NewParser(file string) parser {
 	return par
 }
 
-//CompilerDetails ...
-var CompilerDetails compiler
-
-//FileDetails ...
-var FileDetails map[string]params
-
-func fillCompilerDetails(identifier itemType, param string) {
+func (par *Parser) fillCompilerDetails(identifier itemType, param string) {
 	if identifier == itemBinary {
-		CompilerDetails.Binary = param
+		par.CompilerDetails.Binary = param
 	}
 	if identifier == itemName {
-		CompilerDetails.Name = param
+		par.CompilerDetails.Name = param
 	}
 	if identifier == itemStart {
-		CompilerDetails.Start = param
+		par.CompilerDetails.Start = param
 	}
 	if identifier == itemLdFlags {
-		CompilerDetails.LdFlags = param
+		par.CompilerDetails.LdFlags = param
 	}
 	if identifier == itemIncludes {
-		CompilerDetails.Includes = param
+		par.CompilerDetails.Includes = param
 	}
 	if identifier == itemOthers {
-		CompilerDetails.OtherFlags = param
+		par.CompilerDetails.OtherFlags = param
 	}
 }
 
-func fillFileDetails(name string, identifier itemType, param string) {
+func (par *Parser) fillFileDetails(name string, identifier itemType, param string) {
 	var temp params
 
 	if identifier == itemFile {
 		temp.File = param
 	} else if param != "" {
-		temp = FileDetails[name]
+		temp = par.FileDetails[name]
 	}
 
 	if param == "" {
@@ -189,9 +188,5 @@ func fillFileDetails(name string, identifier itemType, param string) {
 		temp.Deps = paramArray
 	}
 
-	FileDetails[name] = temp
-}
-
-func init() {
-	FileDetails = make(map[string]params)
+	par.FileDetails[name] = temp
 }

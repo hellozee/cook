@@ -32,7 +32,7 @@ func main() {
 	parser := ps.NewParser(Recipe)
 	err = parser.Parse()
 	checkErr(err)
-	generateFileList(ps.CompilerDetails.Start)
+	generateFileList(parser, parser.CompilerDetails.Start)
 	var jsonData []byte
 
 	if _, err := os.Stat("Cooking/details.json"); err == nil {
@@ -53,12 +53,12 @@ func main() {
 
 		structToMap(hashJSONold.Body.Entity)
 
-		compareAndCompile()
+		compareAndCompile(parser)
 
 	} else {
 		_ = os.Mkdir("Cooking", 0777)
 		generateList()
-		compileFirst()
+		compileFirst(parser)
 	}
 
 	fmt.Println("All files Compiled...")
@@ -73,6 +73,6 @@ func main() {
 	_, err = file.Write(jsonData)
 	checkErr(err)
 
-	linkAll()
+	linkAll(parser)
 
 }

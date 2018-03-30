@@ -28,11 +28,6 @@ var hashJSONold parent
 var hashJSONnew parent
 var fileList map[string]string
 
-//Stop Go from throwing warnings if a variable is not used
-func doNothing(str string) {
-	//Go is badass
-}
-
 //Simple Error Checker
 func checkErr(err error) {
 	if err != nil {
@@ -41,8 +36,8 @@ func checkErr(err error) {
 }
 
 //Generate the list of files to be compiled
-func generateFileList(tag string) {
-	details := ps.FileDetails[tag]
+func generateFileList(par ps.Parser, tag string) {
+	details := par.FileDetails[tag]
 
 	_, err := os.Stat(details.File)
 	checkErr(err)
@@ -54,7 +49,7 @@ func generateFileList(tag string) {
 	}
 
 	for _, name := range details.Deps {
-		generateFileList(name)
+		generateFileList(par, name)
 	}
 }
 
