@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	ps "github.com/hellozee/Cook/parser"
+	ps "github.com/hellozee/cook/parser"
 )
 
 func init() {
