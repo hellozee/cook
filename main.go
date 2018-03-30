@@ -17,7 +17,7 @@ func init() {
 	fileList = make(map[string]string)
 }
 
-var quiteFlag = flag.Bool("quiet", false, "To not show any output")
+var quietFlag = flag.Bool("quiet", false, "To not show any output")
 var cleanFlag = flag.Bool("clean", false, "To clean the cached data and rebuild the project")
 var helpFlag = flag.Bool("help", false, "To show this help message")
 var verboseFlag = flag.Bool("verbose", false, "To increase the level of verbosity")
@@ -32,7 +32,7 @@ func main() {
 	--help:
 		To show this help message
 
-	--quite:
+	--quiet:
 		To not show any output
 
 	--clean:
@@ -89,12 +89,12 @@ func main() {
 		compareAndCompile(parser)
 
 	} else {
-		_ = os.Mkdir("Cooking", 0777)
+		_ = os.Mkdir("Cooking", 0755)
 		generateList()
 		compileFirst(parser)
 	}
 
-	if *quiteFlag == false {
+	if *quietFlag == false {
 		fmt.Println("All files Compiled...")
 	}
 
@@ -102,7 +102,7 @@ func main() {
 	checkErr(err)
 
 	file, err := os.OpenFile("Cooking/details.json",
-		os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0777)
+		os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
 	checkErr(err)
 	defer file.Close()
 

@@ -32,7 +32,7 @@ func compileFirst(par ps.Parser) {
 	//Iteratively generate .o files
 
 	for key, value := range fileList {
-		if *quiteFlag == false {
+		if *quietFlag == false {
 			fmt.Println("Compiling " + value)
 		}
 		cmd := exec.Command(par.CompilerDetails.Binary, "-c", value,
@@ -54,7 +54,7 @@ func compareAndCompile(par ps.Parser) {
 		timeStamp := strings.Replace(t.String(), " ", "", -1)
 
 		if !checkTimeStamp(timeStamp, oldfileTimings[value]) {
-			if *quiteFlag == false {
+			if *quietFlag == false {
 				fmt.Println("Compiling " + value)
 			}
 			cmd := exec.Command(par.CompilerDetails.Binary, "-c", value,
@@ -72,7 +72,7 @@ func compareAndCompile(par ps.Parser) {
 func linkAll(par ps.Parser) {
 
 	//Compile all the generated .o files under the Cooking directory
-	if *quiteFlag == false {
+	if *quietFlag == false {
 		fmt.Println("Linking files..")
 	}
 	args := []string{par.CompilerDetails.Binary, "-o", par.CompilerDetails.Name,

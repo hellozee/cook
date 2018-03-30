@@ -79,7 +79,7 @@ After creating the `Recipe` file you just execute Cook in the directory containi
 ### Usage Flags:
 
 - `--help` : To show this help message
-- `--quite` : To not show any output
+- `--quiet` : To not show any output
 - `--clean` : To clean the cached data and perform a clean build
 - `--verbose`: To increase the verbosity level
 
