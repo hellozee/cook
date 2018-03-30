@@ -142,9 +142,10 @@ func NewParser(file string) Parser {
 	lex := newLexer(file)
 	lex.analyze()
 	par := Parser{
-		input:    lex.items,
-		pos:      0,
-		nextItem: lex.items[0],
+		input:       lex.items,
+		pos:         0,
+		nextItem:    lex.items[0],
+		FileDetails: make(map[string]params),
 	}
 	return par
 }
