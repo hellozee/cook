@@ -5,7 +5,7 @@ A Build System for Dummies, written in Golang.
 ### <u>Installation</u>
 
 ```bash
-go get -u github.com/hellozee/Cook
+go get -u github.com/hellozee/cook
 ```
 
 
@@ -30,7 +30,7 @@ Cook is pretty strict on syntax, we have little blocks of what I call entity, th
 - `includes` : Same as Linker directives but for mentioning special include folders.
 - `others` : Some other flags like `-Wall`
 
-So how do we separate normal entity from the special compiler entity? Simple, there is special name given to this entity which is `#` , it is reserved and hence can't be used for normal entities, also naming an entity is compulsory as it also be used for figuring out the dependencies since the same name would be used to in the `deps` identifier. `;` is used as delimiter
+So how do we separate normal entity from the special compiler entity? Simple, there is special name given to this entity which is `#` , it is reserved and hence can't be used for normal entities, also naming an entity is compulsory as it also be used for figuring out the dependencies since the same name would be used to in the `deps` identifier. Linebreaks are used as delimiter but you can use `;` if you want to mention multiple identifiers in a single line. 
 
 ##### Example:
 
