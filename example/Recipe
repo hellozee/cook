@@ -1,0 +1,15 @@
+entity #{
+    binary = g++
+    name = demo
+    start = main
+    includes = 
+    others = -Wall -Wextra -std=c++17
+}
+
+entity main{
+    file = main.cpp
+    deps = test
+}
+entity test{
+    file = test.cpp
+}
