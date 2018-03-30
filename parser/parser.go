@@ -2,6 +2,7 @@ package parser
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 )
 
@@ -53,7 +54,6 @@ func (par *Parser) Parse() error {
 				if par.prevItem.typ == itemEntity {
 					return par.reportError("entity")
 				}
-				return par.reportError("parameter(s)")
 			}
 		}
 
@@ -133,7 +133,7 @@ func (par *Parser) Parse() error {
 }
 
 func (par *Parser) reportError(expected string) error {
-	return errors.New("Syntax error on line " + string(par.currentItem.line) +
+	return errors.New("Syntax error on line " + strconv.Itoa(par.currentItem.line) +
 		": Expected " + expected + " , found " + par.nextItem.val)
 }
 
