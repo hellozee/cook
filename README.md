@@ -78,5 +78,7 @@ After creating the `Recipe` file you just execute Cook in the directory containi
 
 ### ToDos:
 
-- More verbose error messages for proper debugging.
 - Make the code more structured.
+- Add a `--verbose` and `--log` flag
+- Implement `+=` and `-=` operator
+- Add an `import` feature to import other Recipes and recursively cook them
