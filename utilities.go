@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
-	ps "Cook/parser"
+	ps "github.com/hellozee/Cook/parser"
 )
 
 type entity struct {
