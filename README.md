@@ -1,6 +1,6 @@
 # Cook 
 
-A Build System for Dummies, written in Golang.
+A small and fast build system for your C and C++ projects. 
 
 ### <u>Installation</u>
 
@@ -80,7 +80,7 @@ After creating the `Recipe` file you just execute Cook in the directory containi
 
 - `--help` : To show this help message
 - `--quiet` : To not show any output
-- `--clean` : To clean the cached data and perform a clean build
+- `--clean` : To clean the cached data
 - `--verbose`: To increase the verbosity level
 
 ### ToDos:

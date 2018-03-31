@@ -18,7 +18,7 @@ func init() {
 }
 
 var quietFlag = flag.Bool("quiet", false, "To not show any output")
-var cleanFlag = flag.Bool("clean", false, "To clean the cached data and rebuild the project")
+var cleanFlag = flag.Bool("clean", false, "To clean the cached data")
 var helpFlag = flag.Bool("help", false, "To show this help message")
 var verboseFlag = flag.Bool("verbose", false, "To increase the level of verbosity")
 
@@ -62,11 +62,17 @@ func main() {
 	parser := ps.NewParser(Recipe)
 	err = parser.Parse()
 	checkErr(err)
+
+	if *cleanFlag == true {
+		os.RemoveAll("Cooking/")
+		os.Remove(parser.CompilerDetails.Name)
+		return
+	}
+
 	generateFileList(parser, parser.CompilerDetails.Start)
 	var jsonData []byte
 
-	if _, err := os.Stat("Cooking/details.json"); err == nil &&
-		*cleanFlag == false {
+	if _, err := os.Stat("Cooking/details.json"); err == nil {
 
 		//Reading the details.json which contains the file names
 		//against their generated timestamps
