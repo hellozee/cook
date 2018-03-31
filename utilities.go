@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"hash/crc32"
 	"os"
 	"os/exec"
 	"strings"
@@ -12,7 +13,7 @@ import (
 
 type entity struct {
 	File string `json:"file"`
-	Hash string `json:"hash"`
+	Hash uint32 `json:"hash"`
 }
 
 type parent struct {
@@ -22,8 +23,8 @@ type parent struct {
 }
 
 //Never Liked Global variables but until I think of a workaround
-var newfileTimings map[string]string
-var oldfileTimings map[string]string
+var newfileTimings map[string]uint32
+var oldfileTimings map[string]uint32
 var hashJSONold parent
 var hashJSONnew parent
 var fileList map[string]string
@@ -69,12 +70,13 @@ func checkCommand(cmd *exec.Cmd) {
 }
 
 //Generating hash from timestamp
-func hashTime(timeStamp string) string {
-	timeStamp = strings.Replace(timeStamp, " ", "", -1)
-	return timeStamp
+func hashFile(file []byte) uint32 {
+	hash := crc32.ChecksumIEEE(file)
+	return hash
 }
 
 //Comparing hashes of the current timestamp with the previous one
-func checkTimeStamp(timeStamp string, hash string) bool {
-	return timeStamp == hash
+func checkHash(file []byte, hash uint32) bool {
+	generatedHash := crc32.ChecksumIEEE(file)
+	return generatedHash == hash
 }

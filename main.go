@@ -12,8 +12,8 @@ import (
 
 func init() {
 	//Initializing all the hash maps
-	newfileTimings = make(map[string]string)
-	oldfileTimings = make(map[string]string)
+	newfileTimings = make(map[string]uint32)
+	oldfileTimings = make(map[string]uint32)
 	fileList = make(map[string]string)
 }
 

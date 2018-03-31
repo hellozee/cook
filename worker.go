@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -17,11 +18,9 @@ func structToMap(parsedStruct []entity) {
 
 func generateList() {
 	for _, value := range fileList {
-		file, err := os.Stat(value)
+		file, err := ioutil.ReadFile(value)
 		checkErr(err)
-		t := file.ModTime()
-		hash := hashTime(t.String())
-
+		hash := hashFile(file)
 		newfileTimings[value] = hash
 		hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity,
 			entity{File: value, Hash: hash})
@@ -47,13 +46,10 @@ func compareAndCompile(par ps.Parser) {
 
 	for key, value := range fileList {
 
-		file, err := os.Stat(value)
-
+		file, err := ioutil.ReadFile(value)
 		checkErr(err)
-		t := file.ModTime()
-		timeStamp := strings.Replace(t.String(), " ", "", -1)
 
-		if !checkTimeStamp(timeStamp, oldfileTimings[value]) {
+		if !checkHash(file, oldfileTimings[value]) {
 			if *quietFlag == false {
 				fmt.Println("Compiling " + value)
 			}
@@ -61,7 +57,7 @@ func compareAndCompile(par ps.Parser) {
 				"-o", "Cooking/"+key+".o")
 			checkCommand(cmd)
 
-			oldfileTimings[value] = hashTime(t.String())
+			oldfileTimings[value] = hashFile(file)
 		}
 
 		hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity,
