@@ -35,6 +35,7 @@ func compareAndCompile(par ps.Parser, man mg.Manager) {
 		checkErr(err)
 
 		if !mg.CheckHash(file, man.OldFileTimings[value]) {
+
 			if *quietFlag == false {
 				fmt.Println("Compiling " + value)
 			}
@@ -42,6 +43,7 @@ func compareAndCompile(par ps.Parser, man mg.Manager) {
 				"-o", "Cooking/"+key+".o")
 			checkCommand(cmd)
 			man.OldFileTimings[value] = mg.HashFile(file)
+
 		}
 
 		man.HashJSONnew.Body.Entity = append(man.HashJSONnew.Body.Entity,
