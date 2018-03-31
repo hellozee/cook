@@ -3,30 +3,31 @@ package manager
 import (
 	"encoding/json"
 	"errors"
+	"hash/crc32"
 	"io/ioutil"
 	"os"
 
 	ps "github.com/hellozee/cook/parser"
 )
 
-type entity struct {
+type Entity struct {
 	File string `json:"file"`
-	Hash string `json:"hash"`
+	Hash uint32 `json:"hash"`
 }
 
-type parent struct {
+type Parent struct {
 	Body struct {
-		Entity []entity `json:"entity"`
+		Entity []Entity `json:"entity"`
 	} `json:"body"`
 }
 
 type Manager struct {
 	FileData       string
-	NewFileTimings map[string]string
-	OldFileTimings map[string]string
+	NewFileTimings map[string]uint32
+	OldFileTimings map[string]uint32
 	FileList       map[string]string
-	HashJSONold    parent
-	HashJSONnew    parent
+	HashJSONold    Parent
+	HashJSONnew    Parent
 }
 
 func (man *Manager) ReadDetails() error {
@@ -75,27 +76,6 @@ func (man *Manager) WriteDetails() error {
 	return nil
 }
 
-func NewManager() (Manager, error) {
-	temp, err := ioutil.ReadFile("Recipe")
-
-	if err != nil {
-		//Missing Recipe File
-		return Manager{}, errors.New("No sane Recipe File found.\n" +
-			"Make sure you have a Recipe file with proper syntax\n")
-	}
-
-	recipe := string(temp)
-
-	man := Manager{
-		FileData:       recipe,
-		NewFileTimings: make(map[string]string),
-		OldFileTimings: make(map[string]string),
-		FileList:       make(map[string]string),
-	}
-
-	return man, nil
-}
-
 func (man *Manager) GenerateFileList(par ps.Parser, tag string) error {
 	details := par.FileDetails[tag]
 
@@ -120,4 +100,51 @@ func (man *Manager) GenerateFileList(par ps.Parser, tag string) error {
 	}
 
 	return nil
+}
+
+func (man *Manager) GenerateList() error {
+	for _, value := range man.FileList {
+		file, err := ioutil.ReadFile(value)
+		if err != nil {
+			return err
+		}
+		hash := HashFile(file)
+		man.NewFileTimings[value] = hash
+		man.HashJSONnew.Body.Entity = append(man.HashJSONnew.Body.Entity,
+			Entity{File: value, Hash: hash})
+	}
+
+	return nil
+}
+
+func NewManager() (Manager, error) {
+	temp, err := ioutil.ReadFile("Recipe")
+
+	if err != nil {
+		//Missing Recipe File
+		return Manager{}, errors.New("No sane Recipe File found.\n" +
+			"Make sure you have a Recipe file with proper syntax\n")
+	}
+
+	recipe := string(temp)
+
+	man := Manager{
+		FileData:       recipe,
+		NewFileTimings: make(map[string]uint32),
+		OldFileTimings: make(map[string]uint32),
+		FileList:       make(map[string]string),
+	}
+
+	return man, nil
+}
+
+func HashFile(file []byte) uint32 {
+	hash := crc32.ChecksumIEEE(file)
+	return hash
+}
+
+//Comparing hashes of the current timestamp with the previous one
+func CheckHash(file []byte, hash uint32) bool {
+	generatedHash := crc32.ChecksumIEEE(file)
+	return generatedHash == hash
 }

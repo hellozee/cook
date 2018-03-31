@@ -2,36 +2,19 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
 
+	mg "github.com/hellozee/cook/manager"
 	ps "github.com/hellozee/cook/parser"
 )
 
-func structToMap(parsedStruct []entity) {
-	for _, item := range parsedStruct {
-		oldfileTimings[item.File] = item.Hash
-	}
-}
-
-func generateList() {
-	for _, value := range fileList {
-		file, err := os.Stat(value)
-		checkErr(err)
-		t := file.ModTime()
-		hash := hashTime(t.String())
-
-		newfileTimings[value] = hash
-		hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity,
-			entity{File: value, Hash: hash})
-	}
-}
-
-func compileFirst(par ps.Parser) {
+func compileFirst(par ps.Parser, man mg.Manager) {
 	//Iteratively generate .o files
 
-	for key, value := range fileList {
+	for key, value := range man.FileList {
 		if *quietFlag == false {
 			fmt.Println("Compiling " + value)
 		}
@@ -41,31 +24,28 @@ func compileFirst(par ps.Parser) {
 	}
 }
 
-func compareAndCompile(par ps.Parser) {
+func compareAndCompile(par ps.Parser, man mg.Manager) {
 	//Compare the file hash with current hash if do not match generate .o file
 	//also replace the current hash with the new hash
 
-	for key, value := range fileList {
+	for key, value := range man.FileList {
 
-		file, err := os.Stat(value)
+		file, err := ioutil.ReadFile(key)
 
 		checkErr(err)
-		t := file.ModTime()
-		timeStamp := strings.Replace(t.String(), " ", "", -1)
 
-		if !checkTimeStamp(timeStamp, oldfileTimings[value]) {
+		if !mg.CheckHash(file, man.OldFileTimings[value]) {
 			if *quietFlag == false {
 				fmt.Println("Compiling " + value)
 			}
 			cmd := exec.Command(par.CompilerDetails.Binary, "-c", value,
 				"-o", "Cooking/"+key+".o")
 			checkCommand(cmd)
-
-			oldfileTimings[value] = hashTime(t.String())
+			man.OldFileTimings[value] = mg.HashFile(file)
 		}
 
-		hashJSONnew.Body.Entity = append(hashJSONnew.Body.Entity,
-			entity{File: value, Hash: oldfileTimings[value]})
+		man.HashJSONnew.Body.Entity = append(man.HashJSONnew.Body.Entity,
+			mg.Entity{File: value, Hash: man.OldFileTimings[value]})
 	}
 }
 

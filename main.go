@@ -1,21 +1,13 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 
+	mg "github.com/hellozee/cook/manager"
 	ps "github.com/hellozee/cook/parser"
 )
-
-func init() {
-	//Initializing all the hash maps
-	newfileTimings = make(map[string]string)
-	oldfileTimings = make(map[string]string)
-	fileList = make(map[string]string)
-}
 
 var quietFlag = flag.Bool("quiet", false, "To not show any output")
 var cleanFlag = flag.Bool("clean", false, "To clean the cached data")
@@ -36,10 +28,11 @@ func main() {
 		To not show any output
 
 	--clean:
-		To clean the cached data and perform a clean build
+		To clean the cached data
 
 	--verbose:
 		To increase the verbosity level
+		
 	`
 	if *helpFlag == true {
 		fmt.Println(help)
@@ -47,16 +40,9 @@ func main() {
 	}
 
 	//Reading the Recipe File
-	temp, err := ioutil.ReadFile("Recipe")
+	manager, err := mg.NewManager()
 
-	if err != nil {
-		//Missing Recipe File
-		os.Stderr.WriteString("No sane Recipe File found.\n" +
-			"Make sure you have a Recipe file with proper syntax\n")
-		return
-	}
-
-	Recipe := string(temp)
+	Recipe := string(manager.FileData)
 
 	//Parsing the Recipe File
 	parser := ps.NewParser(Recipe)
@@ -69,51 +55,25 @@ func main() {
 		return
 	}
 
-	generateFileList(parser, parser.CompilerDetails.Start)
-	var jsonData []byte
+	err = manager.GenerateFileList(parser, parser.CompilerDetails.Start)
 
 	if _, err := os.Stat("Cooking/details.json"); err == nil {
 
-		//Reading the details.json which contains the file names
-		//against their generated timestamps
-		jsonFile, err := os.Open("Cooking/details.json")
-		defer jsonFile.Close()
+		err = manager.ReadDetails()
 
-		bytes, _ := ioutil.ReadAll(jsonFile)
-		err = json.Unmarshal(bytes, &hashJSONold)
-
-		if err != nil {
-			//Someone has tampered with the JSON file
-			os.Stderr.WriteString("Error parsing Cooking/details.json\n" +
-				"Please run the program again\n")
-			os.Remove("Cooking/details.json")
-			return
-		}
-
-		structToMap(hashJSONold.Body.Entity)
-
-		compareAndCompile(parser)
+		compareAndCompile(parser, manager)
 
 	} else {
 		_ = os.Mkdir("Cooking", 0755)
-		generateList()
-		compileFirst(parser)
+		err = manager.GenerateList()
+		compileFirst(parser, manager)
 	}
 
 	if *quietFlag == false {
 		fmt.Println("All files Compiled...")
 	}
 
-	jsonData, err = json.MarshalIndent(hashJSONnew, "", " ")
-	checkErr(err)
-
-	file, err := os.OpenFile("Cooking/details.json",
-		os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
-	checkErr(err)
-	defer file.Close()
-
-	_, err = file.Write(jsonData)
-	checkErr(err)
+	err = manager.WriteDetails()
 
 	linkAll(parser)
 
