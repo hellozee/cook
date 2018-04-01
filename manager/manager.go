@@ -108,7 +108,7 @@ func (man *Manager) GenerateFileList(par ps.Parser, tag string) error {
 	return nil
 }
 
-//GenerateList Generate a brand new details.json
+//GenerateList  Generate a brand new details.json
 func (man *Manager) GenerateList() error {
 	for _, value := range man.FileList {
 		file, err := ioutil.ReadFile(value)
@@ -146,13 +146,13 @@ func NewManager() (Manager, error) {
 	return man, nil
 }
 
-//HashFile Obtaining the has of the passed file
+//HashFile  Obtaining the has of the passed file
 func HashFile(file []byte) uint32 {
 	hash := crc32.ChecksumIEEE(file)
 	return hash
 }
 
-//CheckHash Comparing hashes of the passed file with the previous hash
+//CheckHash  Comparing hashes of the passed file with the previous hash
 func CheckHash(file []byte, hash uint32) bool {
 	generatedHash := crc32.ChecksumIEEE(file)
 	return generatedHash == hash

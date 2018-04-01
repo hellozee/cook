@@ -55,7 +55,7 @@ var key = map[string]itemType{
 	"deps":     itemDeps,
 }
 
-//lexer Data Structure for holding the Lexer
+//lexer  Data Structure for holding the Lexer
 type lexer struct {
 	input string
 	pos   int
@@ -221,7 +221,7 @@ func (lex *lexer) isDelimiter() {
 	}
 }
 
-//newLexer Function to create a new Lexer
+//newLexer  Function to create a new Lexer
 func newLexer(file string) *lexer {
 	lex := lexer{
 		input: file,
@@ -234,7 +234,7 @@ func newLexer(file string) *lexer {
 	return &lex
 }
 
-//isWhiteSpace Function to determine if the give character is a white space or not
+//isWhiteSpace  Function to determine if the give character is a white space or not
 func isWhiteSpace(currentRune rune) bool {
 	return currentRune == ' ' || currentRune == '\t' || currentRune == '\r'
 }

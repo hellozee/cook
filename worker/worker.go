@@ -39,7 +39,7 @@ func (wor *Worker) CompileFirst(par ps.Parser, man mg.Manager) error {
 }
 
 /*CompareAndCompile  Function for comparing the hash and the compiling if
-the hash did not match */
+  the hash did not match */
 func (wor *Worker) CompareAndCompile(par ps.Parser, man *mg.Manager) error {
 	for key, value := range man.FileList {
 

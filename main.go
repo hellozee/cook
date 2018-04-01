@@ -43,6 +43,12 @@ func main() {
 	//Reading the Recipe File
 	manager, err := mg.NewManager()
 
+	if err != nil {
+		fmt.Println("Unable to open a Recipe File :")
+		fmt.Println(err.Error())
+		return
+	}
+
 	Recipe := string(manager.FileData)
 
 	//Parsing the Recipe File

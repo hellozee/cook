@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-//compiler Data Structure to hold the details for the compiler
+//compiler  Data Structure to hold the details for the compiler
 type compiler struct {
 	Binary     string
 	Name       string
@@ -22,7 +22,7 @@ type params struct {
 	Deps []string
 }
 
-//Parser Data Structure for holding parser details and parsed object
+//Parser  Data Structure for holding parser details and parsed object
 type Parser struct {
 	input           []item
 	pos             int
@@ -33,7 +33,7 @@ type Parser struct {
 	FileDetails     map[string]params
 }
 
-//next Function to shift to the next item in the list
+//next  Function to shift to the next item in the list
 func (par *Parser) next() item {
 	par.prevItem = par.currentItem
 	par.currentItem = par.nextItem
@@ -42,7 +42,7 @@ func (par *Parser) next() item {
 	return par.currentItem
 }
 
-//Parse Function to parse the the Recipe File
+//Parse  Function to parse the the Recipe File
 func (par *Parser) Parse() error {
 
 	isCompiler := false
@@ -135,13 +135,13 @@ func (par *Parser) Parse() error {
 	return nil
 }
 
-//reportError Function for reporting syntax errors
+//reportError  Function for reporting syntax errors
 func (par *Parser) reportError(expected string) error {
 	return errors.New("Syntax error on line " + strconv.Itoa(par.currentItem.line) +
 		": Expected " + expected + " , found " + par.nextItem.val)
 }
 
-//NewParser Helper function to create a parser
+//NewParser  Function to help create a parser
 func NewParser(file string) Parser {
 	lex := newLexer(file)
 	lex.analyze()
@@ -154,7 +154,7 @@ func NewParser(file string) Parser {
 	return par
 }
 
-//fillCompilerDetails Function to store the compiler details
+//fillCompilerDetails  Function to store the compiler details
 func (par *Parser) fillCompilerDetails(identifier itemType, param string) {
 	if identifier == itemBinary {
 		par.CompilerDetails.Binary = param
