@@ -4,6 +4,8 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+
+	lg "github.com/hellozee/cook/logger"
 )
 
 //compiler  Data Structure to hold the details for the compiler
@@ -31,6 +33,7 @@ type Parser struct {
 	nextItem        item
 	CompilerDetails compiler
 	FileDetails     map[string]params
+	Logger          *lg.Logger
 }
 
 //next  Function to shift to the next item in the list
@@ -141,19 +144,6 @@ func (par *Parser) reportError(expected string) error {
 		": Expected " + expected + " , found " + par.nextItem.val)
 }
 
-//NewParser  Function to help create a parser
-func NewParser(file string) Parser {
-	lex := newLexer(file)
-	lex.analyze()
-	par := Parser{
-		input:       lex.items,
-		pos:         0,
-		nextItem:    lex.items[0],
-		FileDetails: make(map[string]params),
-	}
-	return par
-}
-
 //fillCompilerDetails  Function to store the compiler details
 func (par *Parser) fillCompilerDetails(identifier itemType, param string) {
 	if identifier == itemBinary {
@@ -196,4 +186,18 @@ func (par *Parser) fillFileDetails(name string, identifier itemType, param strin
 	}
 
 	par.FileDetails[name] = temp
+}
+
+//NewParser  Function to help create a parser
+func NewParser(file string, log *lg.Logger) Parser {
+	lex := newLexer(file)
+	lex.analyze()
+	par := Parser{
+		input:       lex.items,
+		pos:         0,
+		nextItem:    lex.items[0],
+		FileDetails: make(map[string]params),
+		Logger:      log,
+	}
+	return par
 }

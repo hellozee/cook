@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"strings"
 
+	lg "github.com/hellozee/cook/logger"
 	mg "github.com/hellozee/cook/manager"
 	ps "github.com/hellozee/cook/parser"
 )
@@ -16,6 +17,7 @@ import (
 type Worker struct {
 	QuietFlag   bool
 	VerboseFlag bool
+	Logger      *lg.Logger
 }
 
 //CompileFirst  Function for compiling the files for the first time
@@ -104,4 +106,14 @@ func checkCommand(cmd *exec.Cmd, wor *Worker) error {
 	}
 
 	return nil
+}
+
+func NewWorker(isVerbose bool, isQuiet bool, log *lg.Logger) Worker {
+	wor := Worker{
+		QuietFlag:   isQuiet,
+		VerboseFlag: isVerbose,
+		Logger:      log,
+	}
+
+	return wor
 }

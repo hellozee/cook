@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	lg "github.com/hellozee/cook/logger"
 	mg "github.com/hellozee/cook/manager"
 	ps "github.com/hellozee/cook/parser"
 	wk "github.com/hellozee/cook/worker"
@@ -19,8 +20,7 @@ func main() {
 
 	flag.Parse()
 
-	help := `
-	Usage: cook [OPTIONS]
+	help := `Usage: cook [OPTIONS]
 
 	--help:
 		To show this help message
@@ -40,8 +40,10 @@ func main() {
 		return
 	}
 
+	logger := lg.NewLogger()
+
 	//Reading the Recipe File
-	manager, err := mg.NewManager()
+	manager, err := mg.NewManager(&logger)
 
 	if err != nil {
 		fmt.Println("Unable to open a Recipe File :")
@@ -52,7 +54,7 @@ func main() {
 	Recipe := string(manager.FileData)
 
 	//Parsing the Recipe File
-	parser := ps.NewParser(Recipe)
+	parser := ps.NewParser(Recipe, &logger)
 	err = parser.Parse()
 
 	if err != nil {
@@ -61,10 +63,7 @@ func main() {
 		return
 	}
 
-	worker := wk.Worker{
-		QuietFlag:   *quietFlag,
-		VerboseFlag: *verboseFlag,
-	}
+	worker := wk.NewWorker(*verboseFlag, *quietFlag, &logger)
 
 	if *cleanFlag == true {
 		os.RemoveAll("Cooking/")

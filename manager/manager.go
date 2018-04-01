@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	lg "github.com/hellozee/cook/logger"
 	ps "github.com/hellozee/cook/parser"
 )
 
@@ -31,6 +32,7 @@ type Manager struct {
 	FileList       map[string]string
 	HashJSONold    Parent
 	HashJSONnew    Parent
+	Logger         *lg.Logger
 }
 
 //ReadDetails  Reading from the details.json file
@@ -125,7 +127,7 @@ func (man *Manager) GenerateList() error {
 }
 
 //NewManager  Helper function to create a new manager
-func NewManager() (Manager, error) {
+func NewManager(log *lg.Logger) (Manager, error) {
 	temp, err := ioutil.ReadFile("Recipe")
 
 	if err != nil {
@@ -141,6 +143,7 @@ func NewManager() (Manager, error) {
 		NewFileTimings: make(map[string]uint32),
 		OldFileTimings: make(map[string]uint32),
 		FileList:       make(map[string]string),
+		Logger:         log,
 	}
 
 	return man, nil
