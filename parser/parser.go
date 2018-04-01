@@ -134,14 +134,16 @@ func (par *Parser) Parse() error {
 			identifier = par.currentItem.typ
 		}
 	}
-
+	par.Logger.ReportSuccess("Successfully parsed Recipe file")
 	return nil
 }
 
 //reportError  Function for reporting syntax errors
 func (par *Parser) reportError(expected string) error {
-	return errors.New("Syntax error on line " + strconv.Itoa(par.currentItem.line) +
+	syntaxError := errors.New("Syntax error on line " + strconv.Itoa(par.currentItem.line) +
 		": Expected " + expected + " , found " + par.nextItem.val)
+	par.Logger.ReportError(syntaxError.Error())
+	return syntaxError
 }
 
 //fillCompilerDetails  Function to store the compiler details

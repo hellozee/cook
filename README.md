@@ -79,13 +79,9 @@ After creating the `Recipe` file you just execute Cook in the directory containi
 ### Usage Flags:
 
 - `--help` : To show this help message
-- `--quiet` : To not show any output
 - `--clean` : To clean the cached data
-- `--verbose`: To increase the verbosity level
 
 ### ToDos:
 
-- Make the code more structured.
-- Add a `--verbose` and `--log` flag
 - Implement `+=` and `-=` operator
 - Add an `import` feature to import other Recipes and recursively cook them

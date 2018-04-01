@@ -2,7 +2,6 @@ package manager
 
 import (
 	"encoding/json"
-	"errors"
 	"hash/crc32"
 	"io/ioutil"
 	"os"
@@ -46,14 +45,14 @@ func (man *Manager) ReadDetails() error {
 	if err != nil {
 		//Someone has tampered with the JSON file
 		os.Remove("Cooking/details.json")
-		return errors.New("Error parsing Cooking/details.json\n" +
-			"Please run the program again\n")
+		man.Logger.ReportError(err.Error())
+		return err
 	}
 
 	for _, item := range man.HashJSONold.Body.Entity {
 		man.OldFileTimings[item.File] = item.Hash
 	}
-
+	man.Logger.ReportSuccess("Successfully read details.json")
 	return nil
 }
 
@@ -62,6 +61,7 @@ func (man *Manager) WriteDetails() error {
 	jsonData, err := json.MarshalIndent(man.HashJSONnew, "", " ")
 
 	if err != nil {
+		man.Logger.ReportError(err.Error())
 		return err
 	}
 
@@ -71,15 +71,17 @@ func (man *Manager) WriteDetails() error {
 	defer file.Close()
 
 	if err != nil {
+		man.Logger.ReportError(err.Error())
 		return err
 	}
 
 	_, err = file.Write(jsonData)
 
 	if err != nil {
+		man.Logger.ReportError(err.Error())
 		return err
 	}
-
+	man.Logger.ReportSuccess("Successfully written to details.json")
 	return nil
 }
 
@@ -90,6 +92,7 @@ func (man *Manager) GenerateFileList(par ps.Parser, tag string) error {
 	_, err := os.Stat(details.File)
 
 	if err != nil {
+		man.Logger.ReportError(err.Error())
 		return err
 	}
 
@@ -103,9 +106,12 @@ func (man *Manager) GenerateFileList(par ps.Parser, tag string) error {
 		err = man.GenerateFileList(par, name)
 
 		if err != nil {
+			man.Logger.ReportError(err.Error())
 			return err
 		}
 	}
+
+	man.Logger.ReportSuccess("Successfully generated file list")
 
 	return nil
 }
@@ -115,6 +121,7 @@ func (man *Manager) GenerateList() error {
 	for _, value := range man.FileList {
 		file, err := ioutil.ReadFile(value)
 		if err != nil {
+			man.Logger.ReportError(err.Error())
 			return err
 		}
 		hash := HashFile(file)
@@ -122,7 +129,7 @@ func (man *Manager) GenerateList() error {
 		man.HashJSONnew.Body.Entity = append(man.HashJSONnew.Body.Entity,
 			Entity{File: value, Hash: hash})
 	}
-
+	man.Logger.ReportSuccess("Successfully generated details.json")
 	return nil
 }
 
@@ -132,8 +139,8 @@ func NewManager(log *lg.Logger) (Manager, error) {
 
 	if err != nil {
 		//Missing Recipe File
-		return Manager{}, errors.New("No sane Recipe File found.\n" +
-			"Make sure you have a Recipe file with proper syntax\n")
+		log.ReportError(err.Error())
+		return Manager{}, err
 	}
 
 	recipe := string(temp)
@@ -145,7 +152,7 @@ func NewManager(log *lg.Logger) (Manager, error) {
 		FileList:       make(map[string]string),
 		Logger:         log,
 	}
-
+	man.Logger.ReportSuccess("Successfully created a Manager Object")
 	return man, nil
 }
 

@@ -2,7 +2,6 @@ package worker
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -15,9 +14,7 @@ import (
 
 //Worker  Data Structure to hold flags necessary for the worker object
 type Worker struct {
-	QuietFlag   bool
-	VerboseFlag bool
-	Logger      *lg.Logger
+	Logger *lg.Logger
 }
 
 //CompileFirst  Function for compiling the files for the first time
@@ -25,18 +22,17 @@ func (wor *Worker) CompileFirst(par ps.Parser, man mg.Manager) error {
 	//Iteratively generate .o files
 
 	for key, value := range man.FileList {
-		if wor.QuietFlag == false {
-			fmt.Println("Compiling " + value)
-		}
+		wor.Logger.ReportSuccess("Compiling " + value)
 		cmd := exec.Command(par.CompilerDetails.Binary, "-c", value,
 			"-o", "Cooking/"+key+".o")
 		err := checkCommand(cmd, wor)
 
 		if err != nil {
+			wor.Logger.ReportError(err.Error())
 			return err
 		}
 	}
-
+	wor.Logger.ReportSuccess("Successfully Compiled all the files")
 	return nil
 }
 
@@ -48,19 +44,19 @@ func (wor *Worker) CompareAndCompile(par ps.Parser, man *mg.Manager) error {
 		file, err := ioutil.ReadFile(key)
 
 		if err != nil {
+			wor.Logger.ReportError(err.Error())
 			return err
 		}
 
 		if !mg.CheckHash(file, man.OldFileTimings[value]) {
 
-			if wor.QuietFlag == false {
-				fmt.Println("Compiling " + value)
-			}
+			wor.Logger.ReportSuccess("Compiling " + value)
 			cmd := exec.Command(par.CompilerDetails.Binary, "-c", value,
 				"-o", "Cooking/"+key+".o")
 			err = checkCommand(cmd, wor)
 
 			if err != nil {
+				wor.Logger.ReportError(err.Error())
 				return err
 			}
 
@@ -71,7 +67,7 @@ func (wor *Worker) CompareAndCompile(par ps.Parser, man *mg.Manager) error {
 		man.HashJSONnew.Body.Entity = append(man.HashJSONnew.Body.Entity,
 			mg.Entity{File: value, Hash: man.OldFileTimings[value]})
 	}
-
+	wor.Logger.ReportSuccess("Successfully Compiled all the files")
 	return nil
 }
 
@@ -79,15 +75,13 @@ func (wor *Worker) CompareAndCompile(par ps.Parser, man *mg.Manager) error {
 func (wor *Worker) Link(par ps.Parser) error {
 
 	//Compile all the generated .o files under the Cooking directory
-	if wor.QuietFlag == false {
-		fmt.Println("Linking files..")
-	}
+	wor.Logger.ReportSuccess("Linking files")
 	args := []string{par.CompilerDetails.Binary, "-o", par.CompilerDetails.Name,
 		par.CompilerDetails.Includes, par.CompilerDetails.OtherFlags,
 		"Cooking/*.o", par.CompilerDetails.LdFlags}
 	cmd := exec.Command(os.Getenv("SHELL"), "-c", strings.Join(args, " "))
 	err := checkCommand(cmd, wor)
-
+	wor.Logger.ReportSuccess("Successfully Linked files")
 	return err
 }
 
@@ -98,21 +92,20 @@ func checkCommand(cmd *exec.Cmd, wor *Worker) error {
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
 	err := cmd.Run()
-	if wor.VerboseFlag == true {
-		fmt.Println(strings.Join(cmd.Args, " "))
-	}
+	wor.Logger.ReportWarning(out.String())
+	wor.Logger.ReportError(stderr.String())
 	if err != nil {
+		wor.Logger.ReportError(err.Error())
 		return err
 	}
-
+	wor.Logger.ReportSuccess("Ran Successfully " + strings.Join(cmd.Args, " "))
 	return nil
 }
 
-func NewWorker(isVerbose bool, isQuiet bool, log *lg.Logger) Worker {
+//NewWorker  Function to create a new worker
+func NewWorker(log *lg.Logger) Worker {
 	wor := Worker{
-		QuietFlag:   isQuiet,
-		VerboseFlag: isVerbose,
-		Logger:      log,
+		Logger: log,
 	}
 
 	return wor

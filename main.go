@@ -11,10 +11,8 @@ import (
 	wk "github.com/hellozee/cook/worker"
 )
 
-var quietFlag = flag.Bool("quiet", false, "To not show any output")
 var cleanFlag = flag.Bool("clean", false, "To clean the cached data")
 var helpFlag = flag.Bool("help", false, "To show this help message")
-var verboseFlag = flag.Bool("verbose", false, "To increase the level of verbosity")
 
 func main() {
 
@@ -25,14 +23,8 @@ func main() {
 	--help:
 		To show this help message
 
-	--quiet:
-		To not show any output
-
 	--clean:
 		To clean the cached data
-
-	--verbose:
-		To increase the verbosity level
 		
 	`
 	if *helpFlag == true {
@@ -40,80 +32,58 @@ func main() {
 		return
 	}
 
+	if *cleanFlag == true {
+		os.RemoveAll("Cooking/")
+		return
+	}
+
 	logger := lg.NewLogger()
 
 	//Reading the Recipe File
 	manager, err := mg.NewManager(&logger)
-
-	if err != nil {
-		fmt.Println("Unable to open a Recipe File :")
-		fmt.Println(err.Error())
-		return
-	}
+	must(err, &logger)
 
 	Recipe := string(manager.FileData)
 
 	//Parsing the Recipe File
 	parser := ps.NewParser(Recipe, &logger)
 	err = parser.Parse()
+	must(err, &logger)
 
-	if err != nil {
-		fmt.Println("Error Parsing the Recipe File :")
-		fmt.Println(err.Error())
-		return
-	}
-
-	worker := wk.NewWorker(*verboseFlag, *quietFlag, &logger)
-
-	if *cleanFlag == true {
-		os.RemoveAll("Cooking/")
-		os.Remove(parser.CompilerDetails.Name)
-		return
-	}
-
+	worker := wk.NewWorker(&logger)
 	err = manager.GenerateFileList(parser, parser.CompilerDetails.Start)
+	must(err, &logger)
 
 	if _, err := os.Stat("Cooking/details.json"); err == nil {
 
 		err = manager.ReadDetails()
-
-		if err != nil {
-			fmt.Println("Unable to read details.json :")
-			fmt.Println(err.Error())
-			return
-		}
+		must(err, &logger)
 
 		worker.CompareAndCompile(parser, &manager)
 
 	} else {
 		_ = os.Mkdir("Cooking", 0755)
 		err = manager.GenerateList()
-		if err != nil {
-			fmt.Println("Error Generating the file list :")
-			fmt.Println(err.Error())
-			return
-		}
+		must(err, &logger)
 		worker.CompileFirst(parser, manager)
 	}
 
-	if *quietFlag == false {
-		fmt.Println("All files Compiled...")
-	}
-
 	err = manager.WriteDetails()
-
-	if err != nil {
-		fmt.Println("Unable to write details.json :")
-		fmt.Println(err.Error())
-		return
-	}
+	must(err, &logger)
 
 	err = worker.Link(parser)
+	must(err, &logger)
 
+	logger.WriteLog()
+
+	fmt.Println("Build finished, logs reported to Cooking/log")
+
+}
+
+func must(err error, log *lg.Logger) {
 	if err != nil {
-		fmt.Println("Unable to Link Files:")
-		fmt.Println(err.Error())
-		return
+		fmt.Println("Something went wrong, please check Cooking/log/build.errors")
+		log.WriteLog()
+		os.Exit(-1)
 	}
-
 }
