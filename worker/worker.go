@@ -1,6 +1,7 @@
-package main
+package worker
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,37 +12,52 @@ import (
 	ps "github.com/hellozee/cook/parser"
 )
 
-func compileFirst(par ps.Parser, man mg.Manager) {
+type Worker struct {
+	QuietFlag   bool
+	VerboseFlag bool
+}
+
+func (wor *Worker) CompileFirst(par ps.Parser, man mg.Manager) error {
 	//Iteratively generate .o files
 
 	for key, value := range man.FileList {
-		if *quietFlag == false {
+		if wor.QuietFlag == false {
 			fmt.Println("Compiling " + value)
 		}
 		cmd := exec.Command(par.CompilerDetails.Binary, "-c", value,
 			"-o", "Cooking/"+key+".o")
-		checkCommand(cmd)
+		err := checkCommand(cmd, wor)
+
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
-func compareAndCompile(par ps.Parser, man mg.Manager) {
-	//Compare the file hash with current hash if do not match generate .o file
-	//also replace the current hash with the new hash
-
+func (wor *Worker) CompareAndCompile(par ps.Parser, man *mg.Manager) error {
 	for key, value := range man.FileList {
 
 		file, err := ioutil.ReadFile(key)
 
-		checkErr(err)
+		if err != nil {
+			return err
+		}
 
 		if !mg.CheckHash(file, man.OldFileTimings[value]) {
 
-			if *quietFlag == false {
+			if wor.QuietFlag == false {
 				fmt.Println("Compiling " + value)
 			}
 			cmd := exec.Command(par.CompilerDetails.Binary, "-c", value,
 				"-o", "Cooking/"+key+".o")
-			checkCommand(cmd)
+			err = checkCommand(cmd, wor)
+
+			if err != nil {
+				return err
+			}
+
 			man.OldFileTimings[value] = mg.HashFile(file)
 
 		}
@@ -49,17 +65,37 @@ func compareAndCompile(par ps.Parser, man mg.Manager) {
 		man.HashJSONnew.Body.Entity = append(man.HashJSONnew.Body.Entity,
 			mg.Entity{File: value, Hash: man.OldFileTimings[value]})
 	}
+
+	return nil
 }
 
-func linkAll(par ps.Parser) {
+func (wor *Worker) Link(par ps.Parser) error {
 
 	//Compile all the generated .o files under the Cooking directory
-	if *quietFlag == false {
+	if wor.QuietFlag == false {
 		fmt.Println("Linking files..")
 	}
 	args := []string{par.CompilerDetails.Binary, "-o", par.CompilerDetails.Name,
 		par.CompilerDetails.Includes, par.CompilerDetails.OtherFlags,
 		"Cooking/*.o", par.CompilerDetails.LdFlags}
 	cmd := exec.Command(os.Getenv("SHELL"), "-c", strings.Join(args, " "))
-	checkCommand(cmd)
+	err := checkCommand(cmd, wor)
+
+	return err
+}
+
+func checkCommand(cmd *exec.Cmd, wor *Worker) error {
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if wor.VerboseFlag == true {
+		fmt.Println(strings.Join(cmd.Args, " "))
+	}
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

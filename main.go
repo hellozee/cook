@@ -7,6 +7,7 @@ import (
 
 	mg "github.com/hellozee/cook/manager"
 	ps "github.com/hellozee/cook/parser"
+	wk "github.com/hellozee/cook/worker"
 )
 
 var quietFlag = flag.Bool("quiet", false, "To not show any output")
@@ -47,7 +48,17 @@ func main() {
 	//Parsing the Recipe File
 	parser := ps.NewParser(Recipe)
 	err = parser.Parse()
-	checkErr(err)
+
+	if err != nil {
+		fmt.Println("Error Parsing the Recipe File :")
+		fmt.Println(err.Error())
+		return
+	}
+
+	worker := wk.Worker{
+		QuietFlag:   *quietFlag,
+		VerboseFlag: *verboseFlag,
+	}
 
 	if *cleanFlag == true {
 		os.RemoveAll("Cooking/")
@@ -61,12 +72,23 @@ func main() {
 
 		err = manager.ReadDetails()
 
-		compareAndCompile(parser, manager)
+		if err != nil {
+			fmt.Println("Unable to read details.json :")
+			fmt.Println(err.Error())
+			return
+		}
+
+		worker.CompareAndCompile(parser, &manager)
 
 	} else {
 		_ = os.Mkdir("Cooking", 0755)
 		err = manager.GenerateList()
-		compileFirst(parser, manager)
+		if err != nil {
+			fmt.Println("Error Generating the file list :")
+			fmt.Println(err.Error())
+			return
+		}
+		worker.CompileFirst(parser, manager)
 	}
 
 	if *quietFlag == false {
@@ -75,6 +97,18 @@ func main() {
 
 	err = manager.WriteDetails()
 
-	linkAll(parser)
+	if err != nil {
+		fmt.Println("Unable to write details.json :")
+		fmt.Println(err.Error())
+		return
+	}
+
+	err = worker.Link(parser)
+
+	if err != nil {
+		fmt.Println("Unable to Link Files:")
+		fmt.Println(err.Error())
+		return
+	}
 
 }
