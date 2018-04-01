@@ -10,17 +10,20 @@ import (
 	ps "github.com/hellozee/cook/parser"
 )
 
+//Entity  Data Structure for holding the file name and hash of an entity
 type Entity struct {
 	File string `json:"file"`
 	Hash uint32 `json:"hash"`
 }
 
+//Parent  Data Structure to hold multiple Entity elements
 type Parent struct {
 	Body struct {
 		Entity []Entity `json:"entity"`
 	} `json:"body"`
 }
 
+//Manager  Data Structure to hold and operate on details.json
 type Manager struct {
 	FileData       string
 	NewFileTimings map[string]uint32
@@ -30,6 +33,7 @@ type Manager struct {
 	HashJSONnew    Parent
 }
 
+//ReadDetails  Reading from the details.json file
 func (man *Manager) ReadDetails() error {
 	jsonFile, err := os.Open("Cooking/details.json")
 	defer jsonFile.Close()
@@ -51,6 +55,7 @@ func (man *Manager) ReadDetails() error {
 	return nil
 }
 
+//WriteDetails  Writing the new data onto details.json
 func (man *Manager) WriteDetails() error {
 	jsonData, err := json.MarshalIndent(man.HashJSONnew, "", " ")
 
@@ -76,6 +81,7 @@ func (man *Manager) WriteDetails() error {
 	return nil
 }
 
+//GenerateFileList  Generating the files list which we are going to compile
 func (man *Manager) GenerateFileList(par ps.Parser, tag string) error {
 	details := par.FileDetails[tag]
 
@@ -102,6 +108,7 @@ func (man *Manager) GenerateFileList(par ps.Parser, tag string) error {
 	return nil
 }
 
+//GenerateList Generate a brand new details.json
 func (man *Manager) GenerateList() error {
 	for _, value := range man.FileList {
 		file, err := ioutil.ReadFile(value)
@@ -117,6 +124,7 @@ func (man *Manager) GenerateList() error {
 	return nil
 }
 
+//NewManager  Helper function to create a new manager
 func NewManager() (Manager, error) {
 	temp, err := ioutil.ReadFile("Recipe")
 
@@ -138,12 +146,13 @@ func NewManager() (Manager, error) {
 	return man, nil
 }
 
+//HashFile Obtaining the has of the passed file
 func HashFile(file []byte) uint32 {
 	hash := crc32.ChecksumIEEE(file)
 	return hash
 }
 
-//Comparing hashes of the current timestamp with the previous one
+//CheckHash Comparing hashes of the passed file with the previous hash
 func CheckHash(file []byte, hash uint32) bool {
 	generatedHash := crc32.ChecksumIEEE(file)
 	return generatedHash == hash

@@ -5,6 +5,7 @@ import (
 	"unicode/utf8"
 )
 
+//item  Data Structure for holding a single item
 type item struct {
 	typ  itemType
 	pos  int
@@ -12,8 +13,10 @@ type item struct {
 	line int
 }
 
+//itemType  Substituting int with itemType for better readability
 type itemType int
 
+//itemEnum  Enum for holding the various item types
 const (
 	// Literal terminator symbols
 	itemEOF itemType = iota
@@ -36,8 +39,10 @@ const (
 	itemDeps
 )
 
+//eof  Constant for determining the end of file
 const eof = -1
 
+//key  Map for holding various keywords with respect to item enum
 var key = map[string]itemType{
 	"entity":   itemEntity,
 	"binary":   itemBinary,
@@ -50,6 +55,7 @@ var key = map[string]itemType{
 	"deps":     itemDeps,
 }
 
+//lexer Data Structure for holding the Lexer
 type lexer struct {
 	input string
 	pos   int
@@ -59,6 +65,7 @@ type lexer struct {
 	line  int
 }
 
+//analyze  Function to perform lexical analysis on the stream
 func (lex *lexer) analyze() {
 	for lex.peek() != eof {
 		lex.next()
@@ -73,6 +80,7 @@ func (lex *lexer) analyze() {
 		val: "EOF", line: lex.line})
 }
 
+//next  Function to shift the next rune in the stream
 func (lex *lexer) next() rune {
 	if lex.pos >= len(lex.input) {
 		return eof
@@ -92,12 +100,14 @@ func (lex *lexer) next() rune {
 	return nextRune
 }
 
+//peek  Function to check the next rune while mainting the current position
 func (lex *lexer) peek() rune {
 	nextRune := lex.next()
 	lex.backup()
 	return nextRune
 }
 
+//backup  Function to back one rune from the current position of the Lexer
 func (lex *lexer) backup() {
 	lex.pos -= lex.width
 
@@ -106,6 +116,9 @@ func (lex *lexer) backup() {
 	}
 }
 
+/*isKeyword  Function to to determine whether the given character or
+  the stream of characters is a keyword or not, if yes then
+  the appropriate item is pushed into the lexer data structure */
 func (lex *lexer) isKeyword() {
 	value := strings.TrimSpace(lex.input[lex.start:lex.pos])
 
@@ -122,6 +135,9 @@ func (lex *lexer) isKeyword() {
 	}
 }
 
+/*isDelimiter  Function to to determine whether the given character or
+  the stream of characters is a delimiter or not, if yes then
+  the appropriate item is pushed into the lexer data structure */
 func (lex *lexer) isDelimiter() {
 	switch lex.input[lex.pos] {
 	case '{':
@@ -205,6 +221,7 @@ func (lex *lexer) isDelimiter() {
 	}
 }
 
+//newLexer Function to create a new Lexer
 func newLexer(file string) *lexer {
 	lex := lexer{
 		input: file,
@@ -217,6 +234,7 @@ func newLexer(file string) *lexer {
 	return &lex
 }
 
+//isWhiteSpace Function to determine if the give character is a white space or not
 func isWhiteSpace(currentRune rune) bool {
 	return currentRune == ' ' || currentRune == '\t' || currentRune == '\r'
 }

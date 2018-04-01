@@ -12,11 +12,13 @@ import (
 	ps "github.com/hellozee/cook/parser"
 )
 
+//Worker  Data Structure to hold flags necessary for the worker object
 type Worker struct {
 	QuietFlag   bool
 	VerboseFlag bool
 }
 
+//CompileFirst  Function for compiling the files for the first time
 func (wor *Worker) CompileFirst(par ps.Parser, man mg.Manager) error {
 	//Iteratively generate .o files
 
@@ -36,6 +38,8 @@ func (wor *Worker) CompileFirst(par ps.Parser, man mg.Manager) error {
 	return nil
 }
 
+/*CompareAndCompile  Function for comparing the hash and the compiling if
+the hash did not match */
 func (wor *Worker) CompareAndCompile(par ps.Parser, man *mg.Manager) error {
 	for key, value := range man.FileList {
 
@@ -69,6 +73,7 @@ func (wor *Worker) CompareAndCompile(par ps.Parser, man *mg.Manager) error {
 	return nil
 }
 
+//Link  Function to link the object files generated
 func (wor *Worker) Link(par ps.Parser) error {
 
 	//Compile all the generated .o files under the Cooking directory
@@ -84,6 +89,7 @@ func (wor *Worker) Link(par ps.Parser) error {
 	return err
 }
 
+//checkCommand  Function to run a command and report any errors
 func checkCommand(cmd *exec.Cmd, wor *Worker) error {
 	var out bytes.Buffer
 	var stderr bytes.Buffer
