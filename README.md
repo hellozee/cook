@@ -70,7 +70,7 @@ entity shader{
 }
 ```
 
-This is the `Recipe` file I am using for practicing `OpenGL` , you can try it on my OpenGL Practice [repository](https://github.com/hellozee/gl-practice) .
+This is the `Recipe` file I am using for practicing `OpenGL` , you can try it on my OpenGL Practice [repository](https://github.com/hellozee/gl-practice) also this is available in examples folder.
 
 After creating the `Recipe` file you just execute Cook in the directory containing the `Recipe` file. 
 
