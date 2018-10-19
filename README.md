@@ -5,7 +5,9 @@ A small and fast build system for your C and C++ projects.
 ### <u>Installation</u>
 
 ```bash
-go get -u github.com/hellozee/cook
+git clone https://github.com/hellozee/cook
+cd cook
+make
 ```
 
 
