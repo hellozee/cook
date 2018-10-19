@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	lg "github.com/hellozee/cook/logger"
-	mg "github.com/hellozee/cook/manager"
-	ps "github.com/hellozee/cook/parser"
-	wk "github.com/hellozee/cook/worker"
+	lg "./logger"
+	mg "./manager"
+	ps "./parser"
+	wk "./worker"
 )
 
 var cleanFlag = flag.Bool("clean", false, "To clean the cached data")

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	lg "github.com/hellozee/cook/logger"
+	lg "../logger"
 )
 
 //compiler  Data Structure to hold the details for the compiler

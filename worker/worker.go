@@ -7,9 +7,9 @@ import (
 	"os/exec"
 	"strings"
 
-	lg "github.com/hellozee/cook/logger"
-	mg "github.com/hellozee/cook/manager"
-	ps "github.com/hellozee/cook/parser"
+	lg "../logger"
+	mg "../manager"
+	ps "../parser"
 )
 
 //Worker  Data Structure to hold flags necessary for the worker object

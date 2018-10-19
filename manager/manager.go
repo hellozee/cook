@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	lg "github.com/hellozee/cook/logger"
-	ps "github.com/hellozee/cook/parser"
+	lg "../logger"
+	ps "../parser"
 )
 
 //Entity  Data Structure for holding the file name and hash of an entity
