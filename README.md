@@ -14,11 +14,11 @@ make
 
 ### <u>How to use it?</u>
 
-It is simple just like a we have `Makefile` for make, here we will use a `Recipe` file for doing the same thing. 
+It is simple, just like a we have `Makefile` for make, here we will use a `Recipe` file for doing the same thing. 
 
 #### <u>Syntax:</u>
 
-Cook is pretty strict on syntax, we have little blocks of what I call entity, there are 2 kinds of entity one is normal entity and another is a special entity for the compiler. Entities have have properties which are called identifiers like the normal entities have `file` and `deps` identifiers.
+Cook is pretty strict on syntax, we have little blocks of what I call entity, there are 2 kinds of entity, one is normal entity and another is a special entity for the compiler. Entities have have properties which are called identifiers, like the normal entities have `file` and `deps` identifiers.
 
 - `file ` : Location of the file which this entity is about
 - `deps` : Dependencies of the above mentioned file
@@ -32,7 +32,7 @@ Cook is pretty strict on syntax, we have little blocks of what I call entity, th
 - `includes` : Same as Linker directives but for mentioning special include folders.
 - `others` : Some other flags like `-Wall`
 
-So how do we separate normal entity from the special compiler entity? Simple, there is special name given to this entity which is `#` , it is reserved and hence can't be used for normal entities, also naming an entity is compulsory as it also be used for figuring out the dependencies since the same name would be used to in the `deps` identifier. Linebreaks are used as delimiter but you can use `;` if you want to mention multiple identifiers in a single line. 
+So, how do we separate normal entity from the special compiler entity? Simple, there is special name given to this entity which is `#` , it is reserved and hence can't be used for normal entities, also naming an entity is compulsory as it also be used for figuring out the dependencies since the same name would be used to in the `deps` identifier. Linebreaks are used as delimiter but you can use `;` if you want to mention multiple identifiers in a single line. 
 
 ##### Example:
 
