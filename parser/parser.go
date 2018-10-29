@@ -36,7 +36,7 @@ type Parser struct {
 	Logger          *lg.Logger
 }
 
-//next  Function to shift to the next item in the list
+// next Function to shift to the next item in the list
 func (par *Parser) next() item {
 	par.prevItem = par.currentItem
 	par.currentItem = par.nextItem
@@ -45,9 +45,8 @@ func (par *Parser) next() item {
 	return par.currentItem
 }
 
-//Parse  Function to parse the the Recipe File
+// Parse Function to parse the the Recipe File
 func (par *Parser) Parse() error {
-
 	isCompiler := false
 	enityName := ""
 	identifier := itemNULL
@@ -55,12 +54,10 @@ func (par *Parser) Parse() error {
 
 	for par.nextItem.typ != itemEOF {
 		par.next()
-		if par.currentItem.typ == itemEquals {
-			if par.nextItem.typ != itemString {
-				if par.prevItem.typ == itemEntity {
-					return par.reportError("entity")
-				}
-			}
+		if par.currentItem.typ == itemEquals &&
+			par.nextItem.typ != itemString &&
+			par.prevItem.typ == itemEntity {
+			return par.reportError("entity")
 		}
 
 		if par.currentItem.typ == itemSemicolon {
@@ -68,48 +65,40 @@ func (par *Parser) Parse() error {
 				par.nextItem.typ != itemRightBrace {
 				return par.reportError("}")
 			}
-
 			if isCompiler {
 				par.fillCompilerDetails(identifier, params)
-
 			} else {
 				par.fillFileDetails(enityName, identifier, params)
 			}
 		}
 
-		if par.currentItem.typ == itemLeftBrace {
-			if par.nextItem.typ < itemKeyWord {
-				return par.reportError("identifier")
-			}
+		if par.currentItem.typ == itemLeftBrace &&
+			par.nextItem.typ < itemKeyWord {
+			return par.reportError("identifier")
 		}
 
-		if par.currentItem.typ == itemRightBrace {
-			if par.nextItem.typ != itemEOF &&
-				par.nextItem.typ != itemEntity {
-				return par.reportError("entity")
-			}
+		if par.currentItem.typ == itemRightBrace &&
+			par.nextItem.typ != itemEOF &&
+			par.nextItem.typ != itemEntity {
+			return par.reportError("entity")
 		}
 
-		if par.currentItem.typ == itemString {
-			if par.prevItem.typ == itemEntity {
-				if par.nextItem.typ != itemLeftBrace {
-					return par.reportError("{")
-				}
-
-				if par.currentItem.val == "#" {
-					isCompiler = true
-				} else {
-					isCompiler = false
-				}
-				enityName = par.currentItem.val
-
+		if par.currentItem.typ == itemString &&
+			par.prevItem.typ == itemEntity {
+			if par.nextItem.typ != itemLeftBrace {
+				return par.reportError("{")
+			}
+			if par.currentItem.val == "#" {
+				isCompiler = true
 			} else {
-				if par.nextItem.typ != itemSemicolon {
-					return par.reportError(";")
-				}
-				params = par.currentItem.val
+				isCompiler = false
 			}
-
+			enityName = par.currentItem.val
+		} else if par.currentItem.typ == itemString {
+			if par.nextItem.typ != itemSemicolon {
+				return par.reportError(";")
+			}
+			params = par.currentItem.val
 		}
 
 		if par.currentItem.typ == itemEntity {
@@ -148,22 +137,18 @@ func (par *Parser) reportError(expected string) error {
 
 //fillCompilerDetails  Function to store the compiler details
 func (par *Parser) fillCompilerDetails(identifier itemType, param string) {
-	if identifier == itemBinary {
+	switch {
+	case identifier == itemBinary:
 		par.CompilerDetails.Binary = param
-	}
-	if identifier == itemName {
+	case identifier == itemName:
 		par.CompilerDetails.Name = param
-	}
-	if identifier == itemStart {
+	case identifier == itemStart:
 		par.CompilerDetails.Start = param
-	}
-	if identifier == itemLdFlags {
+	case identifier == itemLdFlags:
 		par.CompilerDetails.LdFlags = param
-	}
-	if identifier == itemIncludes {
+	case identifier == itemIncludes:
 		par.CompilerDetails.Includes = param
-	}
-	if identifier == itemOthers {
+	case identifier == itemOthers:
 		par.CompilerDetails.OtherFlags = param
 	}
 }
